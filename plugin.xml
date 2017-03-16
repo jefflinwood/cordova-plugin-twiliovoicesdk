@@ -28,10 +28,24 @@
                 <string>audio</string>
             </array>
         </config-file>
+
+        <!-- Add Privacy Description for Microphone Usage -->
+        <config-file target="*-Info.plist" parent="NSMicrophoneUsageDescription">
+          <string>The app uses the microphone for voice calls</string>
+        </config-file>
+
+        <!-- Add push entitlements -->
+        <config-file target="*/Entitlements-Debug.plist" parent="aps-environment">
+          <string>development</string>
+        </config-file>
+        <config-file target="*/Entitlements-Release.plist" parent="aps-environment">
+          <string>production</string>
+        </config-file>
         
 
         <header-file src="src/ios/TwilioVoicePlugin.h" />
         <source-file src="src/ios/TwilioVoicePlugin.m" />
+
 
         <info>
 You need to download __Twilio Voice SDK for iOS__ from https://media.twiliocdn.com/sdk/ios/voice/releases/2.0.0-beta6/twilio-voice-ios-2.0.0-beta6.tar.bz2. Uncompress the download - you will need to follow two steps that plugman can not do yet:
