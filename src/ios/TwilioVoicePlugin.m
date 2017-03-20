@@ -4,15 +4,17 @@
 //
 //  Created by Jeffrey Linwood on 3/11/17.
 //
+//  Based on https://github.com/twilio/voice-callkit-quickstart-objc
 //
 
 #import "TwilioVoicePlugin.h"
 
 @import AVFoundation;
+@import CallKit;
 @import PushKit;
 @import TwilioVoiceClient;
 
-@interface TwilioVoicePlugin () <PKPushRegistryDelegate, TVOCallDelegate, TVONotificationDelegate>
+@interface TwilioVoicePlugin () <PKPushRegistryDelegate, TVOCallDelegate, TVONotificationDelegate, CXProviderDelegate>
 
 // Callback for the Javascript plugin delegate, used for events
 @property(nonatomic, strong) NSString *callback;
@@ -31,6 +33,10 @@
 
 // Access Token from Twilio
 @property (nonatomic, strong) NSString *accessToken;
+
+// Call Kit member variables
+@property (nonatomic, strong) CXProvider *callKitProvider;
+@property (nonatomic, strong) CXCallController *callKitCallController;
 
 @end
 
@@ -54,11 +60,25 @@
     
     self.accessToken = [command.arguments objectAtIndex:0];
     if (self.accessToken) {
+        
         // initialize VOIP Push Registry
         self.voipPushRegistry = [[PKPushRegistry alloc] initWithQueue:dispatch_get_main_queue()];
         self.voipPushRegistry.delegate = self;
         self.voipPushRegistry.desiredPushTypes = [NSSet setWithObject:PKPushTypeVoIP];
+        
+        // initialize CallKit (based on Twilio ObjCVoiceCallKitQuickstart)
+        CXProviderConfiguration *configuration = [[CXProviderConfiguration alloc] initWithLocalizedName:@"Twilio Voice Plugin for PhoneGap"];
+        configuration.maximumCallGroups = 1;
+        configuration.maximumCallsPerCallGroup = 1;
+        UIImage *callkitIcon = [UIImage imageNamed:@"logo.png"];
+        configuration.iconTemplateImageData = UIImagePNGRepresentation(callkitIcon);
+        
+        self.callKitProvider = [[CXProvider alloc] initWithConfiguration:configuration];
+        [self.callKitProvider setDelegate:self queue:nil];
+        
+        self.callKitCallController = [[CXCallController alloc] init];
     }
+    
 }
 
 - (void) call:(CDVInvokedUrlCommand*)command {
@@ -152,6 +172,9 @@
                                            @"callSid":callInvite.callSid,
                                            @"state":[self stringFromCallInviteState:callInvite.state]
                                            };
+    
+    [self reportIncomingCallFrom:callInvite.from withUUID:callInvite.uuid];
+
     [self javascriptCallback:@"oncallinvitereceived" withArguments:callInviteProperties];
 }
 
@@ -193,6 +216,10 @@
 
 - (void)callDidDisconnect:(TVOCall *)call {
     NSLog(@"Call Did Disconnect: %@", [call description]);
+    
+    // Call Kit Integration
+    [self performEndCallActionWithUUID:call.uuid];
+    
     self.call = nil;
     [self javascriptCallback:@"oncalldiddisconnect"];
 }
@@ -250,6 +277,152 @@
     [result setKeepCallbackAsBool:YES];
     
     [self.commandDelegate sendPluginResult:result callbackId:self.callback];
+}
+
+
+#pragma mark - CXProviderDelegate - based on Twilio Voice with CallKit Quickstart ObjC
+
+// All CallKit Integration Code comes from https://github.com/twilio/voice-callkit-quickstart-objc/blob/master/ObjCVoiceCallKitQuickstart/ViewController.m
+
+- (void)providerDidReset:(CXProvider *)provider {
+    // No implementation
+}
+
+- (void)providerDidBegin:(CXProvider *)provider {
+    // No implementation
+}
+
+- (void)provider:(CXProvider *)provider didActivateAudioSession:(AVAudioSession *)audioSession {
+    [[VoiceClient sharedInstance] startAudioDevice];
+}
+
+- (void)provider:(CXProvider *)provider didDeactivateAudioSession:(AVAudioSession *)audioSession {
+    // No implementation
+}
+
+- (void)provider:(CXProvider *)provider timedOutPerformingAction:(CXAction *)action {
+    // No implementation
+}
+
+- (void)provider:(CXProvider *)provider performStartCallAction:(CXStartCallAction *)action {
+    
+    [[VoiceClient sharedInstance] configureAudioSession];
+    
+    self.call = [[VoiceClient sharedInstance] call:self.accessToken
+                                            params:@{}
+                                          delegate:self];
+    
+    if (!self.call) {
+        [action fail];
+    } else {
+        self.call.uuid = action.callUUID;
+        [action fulfillWithDateStarted:[NSDate date]];
+    }
+}
+
+- (void)provider:(CXProvider *)provider performAnswerCallAction:(CXAnswerCallAction *)action {
+
+    // Below comment from: https://github.com/twilio/voice-callkit-quickstart-objc/blob/master/ObjCVoiceCallKitQuickstart/ViewController.m#L298
+    
+    // Comment below from
+    // RCP: Workaround from https://forums.developer.apple.com/message/169511 suggests configuring audio in the
+    //      completion block of the `reportNewIncomingCallWithUUID:update:completion:` method instead of in
+    //      `provider:performAnswerCallAction:` per the WWDC examples.
+    // [[VoiceClient sharedInstance] configureAudioSession];
+    
+    self.call = [self.callInvite acceptWithDelegate:self];
+    if (self.call) {
+        self.call.uuid = [action callUUID];
+    }
+    
+    self.callInvite = nil;
+    
+    [action fulfill];
+}
+
+- (void)provider:(CXProvider *)provider performEndCallAction:(CXEndCallAction *)action {
+    
+    [[VoiceClient sharedInstance] stopAudioDevice];
+    
+    if (self.callInvite && self.callInvite.state == TVOCallInviteStatePending) {
+        [self.callInvite reject];
+        self.callInvite = nil;
+    } else if (self.call) {
+        [self.call disconnect];
+    }
+    
+    [action fulfill];
+}
+
+#pragma mark - CallKit Actions
+- (void)performStartCallActionWithUUID:(NSUUID *)uuid handle:(NSString *)handle {
+    if (uuid == nil || handle == nil) {
+        return;
+    }
+    
+    CXHandle *callHandle = [[CXHandle alloc] initWithType:CXHandleTypeGeneric value:handle];
+    CXStartCallAction *startCallAction = [[CXStartCallAction alloc] initWithCallUUID:uuid handle:callHandle];
+    CXTransaction *transaction = [[CXTransaction alloc] initWithAction:startCallAction];
+    
+    [self.callKitCallController requestTransaction:transaction completion:^(NSError *error) {
+        if (error) {
+            NSLog(@"StartCallAction transaction request failed: %@", [error localizedDescription]);
+        } else {
+            NSLog(@"StartCallAction transaction request successful");
+            
+            CXCallUpdate *callUpdate = [[CXCallUpdate alloc] init];
+            callUpdate.remoteHandle = callHandle;
+            callUpdate.supportsDTMF = YES;
+            callUpdate.supportsHolding = NO;
+            callUpdate.supportsGrouping = NO;
+            callUpdate.supportsUngrouping = NO;
+            callUpdate.hasVideo = NO;
+            
+            [self.callKitProvider reportCallWithUUID:uuid updated:callUpdate];
+        }
+    }];
+}
+
+- (void)reportIncomingCallFrom:(NSString *) from withUUID:(NSUUID *)uuid {
+    CXHandle *callHandle = [[CXHandle alloc] initWithType:CXHandleTypeGeneric value:from];
+    
+    CXCallUpdate *callUpdate = [[CXCallUpdate alloc] init];
+    callUpdate.remoteHandle = callHandle;
+    callUpdate.supportsDTMF = YES;
+    callUpdate.supportsHolding = NO;
+    callUpdate.supportsGrouping = NO;
+    callUpdate.supportsUngrouping = NO;
+    callUpdate.hasVideo = NO;
+    
+    [self.callKitProvider reportNewIncomingCallWithUUID:uuid update:callUpdate completion:^(NSError *error) {
+        if (!error) {
+            NSLog(@"Incoming call successfully reported.");
+            
+            // RCP: Workaround per https://forums.developer.apple.com/message/169511
+            [[VoiceClient sharedInstance] configureAudioSession];
+        }
+        else {
+            NSLog(@"Failed to report incoming call successfully: %@.", [error localizedDescription]);
+        }
+    }];
+}
+
+- (void)performEndCallActionWithUUID:(NSUUID *)uuid {
+    if (uuid == nil) {
+        return;
+    }
+    
+    CXEndCallAction *endCallAction = [[CXEndCallAction alloc] initWithCallUUID:uuid];
+    CXTransaction *transaction = [[CXTransaction alloc] initWithAction:endCallAction];
+    
+    [self.callKitCallController requestTransaction:transaction completion:^(NSError *error) {
+        if (error) {
+            NSLog(@"EndCallAction transaction request failed: %@", [error localizedDescription]);
+        }
+        else {
+            NSLog(@"EndCallAction transaction request successful");
+        }
+    }];
 }
 
 @end
