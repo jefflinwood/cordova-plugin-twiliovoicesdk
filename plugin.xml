@@ -11,6 +11,15 @@
 
     <asset src="www/TwilioVoicePlugin.js" target="js/TwilioVoicePlugin.js" />
 
+    <engines>
+        <engine name="cordova" version=">=6.4.0"/>
+        <engine name="cordova-android" version=">=6.0.0"/>
+        <engine name="cordova-ios" version=">=4.3.0"/>
+    </engines>
+
+    <!-- Necessary for Android Push notification support with GCM for Twilio Voice -->
+    <preference name="GCM_SENDER_ID" default=""/>
+
      <!-- android -->
     <platform name="android">
         <config-file target="AndroidManifest.xml" parent="/manifest">
@@ -36,7 +45,7 @@
         </receiver>
 
         <service
-            android:name=".gcm.VoiceGCMListenerService"
+            android:name="com.phonegap.plugins.twiliovoice.gcm.VoiceGCMListenerService"
             android:exported="false">
             <intent-filter>
                 <action android:name="com.google.android.c2dm.intent.RECEIVE" />
@@ -44,7 +53,7 @@
         </service>
 
         <service
-            android:name=".gcm.VoiceInstanceIDListenerService"
+            android:name="com.phonegap.plugins.twiliovoice.gcm.VoiceInstanceIDListenerService"
             android:exported="false">
             <intent-filter>
                 <action android:name="com.google.android.gms.iid.InstanceID" />
@@ -52,7 +61,7 @@
         </service>
 
         <service
-            android:name=".gcm.GCMRegistrationService"
+            android:name="com.phonegap.plugins.twiliovoice.gcm.GCMRegistrationService"
             android:exported="false"></service>
 
         <meta-data
@@ -65,12 +74,22 @@
               <param name="android-package" value="com.phonegap.plugins.twiliovoice.TwilioVoicePlugin"/>
             </feature>
         </config-file>
+
+        <config-file target="res/values/strings.xml" parent="/resources">
+            <string name="gcm_sender_id" translatable="false">$GCM_SENDER_ID</string>
+        </config-file>
         
         <framework src="com.google.android.gms:play-services-gcm:9.4.0" />
         <framework src="com.twilio:voice-android:2.0.0-beta4"/>
 
-         <source-file src="src/android/com/phonegap/plugins/twiliovoice/TwilioVoicePlugin.java"
+        <source-file src="src/android/com/phonegap/plugins/twiliovoice/TwilioVoicePlugin.java"
                 target-dir="src/com/phonegap/plugins/twiliovoice" />
+        <source-file src="src/android/com/phonegap/plugins/twiliovoice/gcm/GCMRegistrationService.java"
+                target-dir="src/com/phonegap/plugins/twiliovoice/gcm" />
+        <source-file src="src/android/com/phonegap/plugins/twiliovoice/gcm/VoiceGCMListenerService.java"
+                target-dir="src/com/phonegap/plugins/twiliovoice/gcm" />
+        <source-file src="src/android/com/phonegap/plugins/twiliovoice/gcm/VoiceInstanceIDListenerService.java"
+                target-dir="src/com/phonegap/plugins/twiliovoice/gcm" />
     </platform>
 
     <!-- ios -->
