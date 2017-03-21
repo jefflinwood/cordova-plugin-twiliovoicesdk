@@ -11,6 +11,68 @@
 
     <asset src="www/TwilioVoicePlugin.js" target="js/TwilioVoicePlugin.js" />
 
+     <!-- android -->
+    <platform name="android">
+        <config-file target="AndroidManifest.xml" parent="/manifest">
+            <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
+            <uses-permission android:name="android.permission.WAKE_LOCK" />
+            <uses-permission android:name="$PACKAGE_NAME.permission.C2D_MESSAGE" />
+            <permission android:name="$PACKAGE_NAME.permission.C2D_MESSAGE" android:protectionLevel="signature"/>
+        </config-file>
+
+        <config-file target="AndroidManifest.xml" parent="/manifest/application">
+             
+
+        <receiver
+            android:name="com.google.android.gms.gcm.GcmReceiver"
+            android:exported="true"
+            android:permission="com.google.android.c2dm.permission.SEND">
+            <intent-filter>
+                <action android:name="com.google.android.c2dm.intent.RECEIVE" />
+                <action android:name="com.google.android.c2dm.intent.REGISTRATION" />
+
+                <category android:name="$PACKAGE_NAME" />
+            </intent-filter>
+        </receiver>
+
+        <service
+            android:name=".gcm.VoiceGCMListenerService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.android.c2dm.intent.RECEIVE" />
+            </intent-filter>
+        </service>
+
+        <service
+            android:name=".gcm.VoiceInstanceIDListenerService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.android.gms.iid.InstanceID" />
+            </intent-filter>
+        </service>
+
+        <service
+            android:name=".gcm.GCMRegistrationService"
+            android:exported="false"></service>
+
+        <meta-data
+            android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
+        </config-file>
+
+        <config-file target="res/xml/config.xml" parent="/widget">
+           <feature name="TwilioVoicePlugin">
+              <param name="android-package" value="com.phonegap.plugins.twiliovoice.TwilioVoicePlugin"/>
+            </feature>
+        </config-file>
+        
+        <framework src="com.google.android.gms:play-services-gcm:9.4.0" />
+        <framework src="com.twilio:voice-android:2.0.0-beta4"/>
+
+         <source-file src="src/android/com/phonegap/plugins/twiliovoice/TwilioVoicePlugin.java"
+                target-dir="src/com/phonegap/plugins/twiliovoice" />
+    </platform>
+
     <!-- ios -->
     <platform name="ios">
         <!-- Add the Twilio Voice plugin to the iOS app's config.xml -->
