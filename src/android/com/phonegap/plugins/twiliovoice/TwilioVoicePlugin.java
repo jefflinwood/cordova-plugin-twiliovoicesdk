@@ -146,6 +146,9 @@ public class TwilioVoicePlugin extends CordovaPlugin {
             LocalBroadcastManager lbm = LocalBroadcastManager.getInstance(cordova.getActivity());
             lbm.registerReceiver(mBroadcastReceiver, intentFilter);
 
+            // initialize sound SoundPoolManager
+            SoundPoolManager.getInstance(cordova.getActivity());
+
 			if(cordova.hasPermission(RECORD_AUDIO))
 			{
 				startGCMRegistration();
@@ -480,11 +483,12 @@ public class TwilioVoicePlugin extends CordovaPlugin {
 
 	@Override
 	public void onDestroy() {
-		super.onDestroy();
 		//lifecycle events
+        SoundPoolManager.getInstance(cordova.getActivity()).release();
 		LocalBroadcastManager lbm = LocalBroadcastManager.getInstance(cordova
 				.getActivity());
 		lbm.unregisterReceiver(mBroadcastReceiver);
+        super.onDestroy();
 	}
 
 
@@ -521,7 +525,7 @@ public class TwilioVoicePlugin extends CordovaPlugin {
             mCallInvite = intent.getParcelableExtra(INCOMING_CALL_INVITE);
             Log.d(TAG, "Call Invite: " + mCallInvite.toString());
             if (!mCallInvite.isCancelled()) {
-                // SoundPoolManager.getInstance(this).playRinging();
+                SoundPoolManager.getInstance(cordova.getActivity()).playRinging();
                 NotificationManager mNotifyMgr = 
 		        (NotificationManager) cordova.getActivity().getSystemService(Activity.NOTIFICATION_SERVICE);
                 mNotifyMgr.cancel(intent.getIntExtra(INCOMING_CALL_NOTIFICATION_ID, 0));
@@ -537,7 +541,7 @@ public class TwilioVoicePlugin extends CordovaPlugin {
                 }
                 javascriptCallback("oncallinvitereceived", callInviteProperties, mInitCallbackContext); 
             } else {
-                // SoundPoolManager.getInstance(this).stopRinging();
+                SoundPoolManager.getInstance(cordova.getActivity()).stopRinging();
                 javascriptCallback("oncallinvitecanceled",mInitCallbackContext); 
             }
         }

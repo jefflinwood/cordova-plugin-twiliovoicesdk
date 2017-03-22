@@ -84,12 +84,17 @@
 
         <source-file src="src/android/com/phonegap/plugins/twiliovoice/TwilioVoicePlugin.java"
                 target-dir="src/com/phonegap/plugins/twiliovoice" />
+        <source-file src="src/android/com/phonegap/plugins/twiliovoice/SoundPoolManager.java"
+                target-dir="src/com/phonegap/plugins/twiliovoice" />
         <source-file src="src/android/com/phonegap/plugins/twiliovoice/gcm/GCMRegistrationService.java"
                 target-dir="src/com/phonegap/plugins/twiliovoice/gcm" />
         <source-file src="src/android/com/phonegap/plugins/twiliovoice/gcm/VoiceGCMListenerService.java"
                 target-dir="src/com/phonegap/plugins/twiliovoice/gcm" />
         <source-file src="src/android/com/phonegap/plugins/twiliovoice/gcm/VoiceInstanceIDListenerService.java"
                 target-dir="src/com/phonegap/plugins/twiliovoice/gcm" />
+
+        <source-file src="sounds/ringing.wav" target-dir="res/raw"/>
+
     </platform>
 
     <!-- ios -->
@@ -127,7 +132,7 @@
         <header-file src="src/ios/TwilioVoicePlugin.h" />
         <source-file src="src/ios/TwilioVoicePlugin.m" />
 
-
+        <resource-file src="sounds/ringing.wav" />
         <info>
 You need to download __Twilio Voice SDK for iOS__ from https://media.twiliocdn.com/sdk/ios/voice/releases/2.0.0-beta6/twilio-voice-ios-2.0.0-beta6.tar.bz2. Uncompress the download - you will need to follow two steps that plugman can not do yet:
 

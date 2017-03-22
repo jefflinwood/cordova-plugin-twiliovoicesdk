@@ -72,6 +72,7 @@
         configuration.maximumCallsPerCallGroup = 1;
         UIImage *callkitIcon = [UIImage imageNamed:@"logo.png"];
         configuration.iconTemplateImageData = UIImagePNGRepresentation(callkitIcon);
+        configuration.ringtoneSound = @"ringing.wav";
         
         self.callKitProvider = [[CXProvider alloc] initWithConfiguration:configuration];
         [self.callKitProvider setDelegate:self queue:nil];
