@@ -168,8 +168,14 @@ public class TwilioVoicePlugin extends CordovaPlugin {
 		} else if ("sendDigits".equals(action)) {
 			sendDigits(args, callbackContext);
 			return true;
-		} else if ("mute".equals(action)) {
-			mute(callbackContext);
+		} else if ("muteCall".equals(action)) {
+			muteCall(callbackContext);
+			return true;
+		}  else if ("unmuteCall".equals(action)) {
+			unmuteCall(callbackContext);
+			return true;
+		}  else if ("isCallMuted".equals(action)) {
+			isCallMuted(callbackContext);
 			return true;
 		} else if ("callStatus".equals(action)) {
 			callStatus(callbackContext);
@@ -323,14 +329,34 @@ public class TwilioVoicePlugin extends CordovaPlugin {
 		mCall.sendDigits(arguments.optString(0));
 	}
 	
-	private void mute(CallbackContext callbackContext) {
+	private void muteCall(CallbackContext callbackContext) {
 		if (mCall == null) {
 			callbackContext.sendPluginResult(new PluginResult(
 					PluginResult.Status.ERROR));
 			return;
 		}
-		mCall.mute(!mCall.isMuted());
+		mCall.mute(true);
 		callbackContext.success();
+	}
+
+    private void unmuteCall(CallbackContext callbackContext) {
+		if (mCall == null) {
+			callbackContext.sendPluginResult(new PluginResult(
+					PluginResult.Status.ERROR));
+			return;
+		}
+		mCall.mute(false);
+		callbackContext.success();
+	}
+
+    private void isCallMuted(CallbackContext callbackContext) {
+		if (mCall == null) {
+			callbackContext.sendPluginResult(new PluginResult(
+                PluginResult.Status.OK,false));
+			return;
+		}
+		PluginResult result = new PluginResult(PluginResult.Status.OK,mCall.isMuted());
+		callbackContext.sendPluginResult(result);
 	}
 
 

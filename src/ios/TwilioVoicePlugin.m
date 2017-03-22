@@ -144,9 +144,25 @@
     }
 }
 
-- (void) mute: (CDVInvokedUrlCommand*)command {
+- (void) muteCall: (CDVInvokedUrlCommand*)command {
     if (self.call) {
-        self.call.muted = !self.call.isMuted;
+        self.call.muted = YES;
+    }
+}
+
+- (void) unmuteCall: (CDVInvokedUrlCommand*)command {
+    if (self.call) {
+        self.call.muted = NO;
+    }
+}
+
+- (void) isCallMuted: (CDVInvokedUrlCommand*)command {
+    if (self.call) {
+        CDVPluginResult *result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsBool:self.call.muted];
+        [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
+    } else {
+        CDVPluginResult *result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsBool:NO];
+        [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
     }
 }
 
