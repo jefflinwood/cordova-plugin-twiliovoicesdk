@@ -168,8 +168,8 @@ public class TwilioVoicePlugin extends CordovaPlugin {
 		} else if ("sendDigits".equals(action)) {
 			sendDigits(args, callbackContext);
 			return true;
-		} else if ("muteConnection".equals(action)) {
-			muteConnection(callbackContext);
+		} else if ("mute".equals(action)) {
+			mute(callbackContext);
 			return true;
 		} else if ("callStatus".equals(action)) {
 			callStatus(callbackContext);
@@ -323,7 +323,7 @@ public class TwilioVoicePlugin extends CordovaPlugin {
 		mCall.sendDigits(arguments.optString(0));
 	}
 	
-	private void muteConnection(CallbackContext callbackContext) {
+	private void mute(CallbackContext callbackContext) {
 		if (mCall == null) {
 			callbackContext.sendPluginResult(new PluginResult(
 					PluginResult.Status.ERROR));

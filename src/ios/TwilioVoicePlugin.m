@@ -124,6 +124,32 @@
     }
 }
 
+-(void)setSpeaker:(CDVInvokedUrlCommand*)command {
+    NSString *mode = [command.arguments objectAtIndex:0];
+    if([mode isEqual: @"on"]) {
+        UInt32 audioRouteOverride = kAudioSessionOverrideAudioRoute_Speaker;
+        AudioSessionSetProperty (
+            kAudioSessionProperty_OverrideAudioRoute,
+            sizeof (audioRouteOverride),
+            &audioRouteOverride
+        );
+    }
+    else {
+        UInt32 audioRouteOverride = kAudioSessionOverrideAudioRoute_None;
+        AudioSessionSetProperty (
+            kAudioSessionProperty_OverrideAudioRoute,
+            sizeof (audioRouteOverride),
+            &audioRouteOverride
+        );
+    }
+}
+
+- (void) mute: (CDVInvokedUrlCommand*)command {
+    if (self.call) {
+        self.call.muted = !self.call.isMuted;
+    }
+}
+
 #pragma mark PKPushRegistryDelegate methods
 - (void)pushRegistry:(PKPushRegistry *)registry didUpdatePushCredentials:(PKPushCredentials *)credentials forType:(PKPushType)type {
     if ([type isEqualToString:PKPushTypeVoIP]) {

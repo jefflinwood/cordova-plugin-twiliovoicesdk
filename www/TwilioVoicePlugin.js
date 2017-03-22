@@ -27,6 +27,15 @@
         Cordova.exec(null,null,"TwilioVoicePlugin","acceptCallInvite",null);
     }
 
+    TwilioPlugin.TwilioVoiceClient.prototype.setSpeaker = function(mode) {
+        // "on" or "off"        
+        Cordova.exec(null, null, "TwilioVoicePlugin", "setSpeaker", [mode]);
+    }
+
+    TwilioPlugin.TwilioVoiceClient.prototype.mute = function() {
+        Cordova.exec(null, null, "TwilioVoicePlugin", "mute", null);
+    }
+
     TwilioPlugin.TwilioVoiceClient.prototype.initialize = function(token) {
 
         var error = function(error) {
