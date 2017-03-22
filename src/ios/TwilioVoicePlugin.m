@@ -260,13 +260,13 @@
 
 - (NSString*) stringFromCallInviteState:(TVOCallInviteState)state {
     if (state == TVOCallInviteStatePending) {
-        return @"TVOCallInviteStatePending";
+        return @"pending";
     } else if (state == TVOCallInviteStateAccepted) {
-        return @"TVOCallInviteStateAccepted";
+        return @"accepted";
     } else if (state == TVOCallInviteStateRejected) {
-        return @"TVOCallInviteStateRejected";
+        return @"rejected";
     } else if (state == TVOCallInviteStateCancelled) {
-        return @"TVOCallInviteStateCancelled";
+        return @"cancelled";
     }
     
     return nil;
@@ -274,11 +274,11 @@
 
 - (NSString*) stringFromCallState:(TVOCallState)state {
     if (state == TVOCallStateConnected) {
-        return @"TVOCallStateConnected";
+        return @"connected";
     } else if (state == TVOCallStateConnecting) {
-        return @"TVOCallStateConnecting";
+        return @"connecting";
     } else if (state == TVOCallStateDisconnected) {
-        return @"TVOCallStateDisconnected";
+        return @"disconnected";
     }
     return nil;
 }

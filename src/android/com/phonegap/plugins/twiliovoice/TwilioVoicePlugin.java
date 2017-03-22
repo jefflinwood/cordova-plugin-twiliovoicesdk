@@ -566,24 +566,24 @@ public class TwilioVoicePlugin extends CordovaPlugin {
 
 	private String getCallState(CallState callState) {
 		if (callState == CallState.CONNECTED) {
-			return "TVOCallStateConnected";
+			return "connected";
 		} else if (callState == CallState.CONNECTING) {
-			return "TVOCallStateConnecting";
+			return "connecting";
 		} else if (callState == CallState.DISCONNECTED) {
-			return "TVOCallStateDisconnected";
+			return "disconnected";
 		}
 		return null;
 	}
 
 	private String getCallInviteState(CallInvite.State state) {
 		if (state == CallInvite.State.PENDING) {
-			return "TVOCallInviteStatePending";
+			return "pending";
 		} else if (state == CallInvite.State.ACCEPTED) {
-			return "TVOCallInviteStateAccepted";
+			return "accepted";
 		} else if (state == CallInvite.State.REJECTED) {
-			return "TVOCallInviteStateRejected";
+			return "rejected";
 		} else if (state == CallInvite.State.CANCELLED) {
-			return "TVOCallInviteStateCancelled";
+			return "cancelled";
 		}
 
 		return null;
