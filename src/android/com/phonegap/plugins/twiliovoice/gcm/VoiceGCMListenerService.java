@@ -74,17 +74,24 @@ public class VoiceGCMListenerService extends GcmListenerService {
     private void showNotification(CallInvite callInvite, int notificationId) {
         String callSid = callInvite.getCallSid();
 
+        Log.d(TAG, "showNotification()");
+
         if (!callInvite.isCancelled()) {
             /*
              * Create a PendingIntent to specify the action when the notification is
              * selected in the notification drawer
              */
-            Intent intent = new Intent(this, TwilioVoicePlugin.class);
+            
+            //start up the launch activity for the app (Cordova)
+            Intent intent = getPackageManager().getLaunchIntentForPackage(getPackageName());
             intent.setAction(TwilioVoicePlugin.ACTION_INCOMING_CALL);
             intent.putExtra(TwilioVoicePlugin.INCOMING_CALL_INVITE, callInvite);
             intent.putExtra(TwilioVoicePlugin.INCOMING_CALL_NOTIFICATION_ID, notificationId);
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
+
+            Log.d(TAG, "showNotification(): Created pending intent");
+
 
             /*
              * Pass the notification id and call sid to use as an identifier to cancel the
@@ -97,18 +104,23 @@ public class VoiceGCMListenerService extends GcmListenerService {
             /*
              * Create the notification shown in the notification drawer
              */
+            int iconIdentifier = getResources().getIdentifier("icon", "mipmap", getPackageName());
             NotificationCompat.Builder notificationBuilder =
                     new NotificationCompat.Builder(this)
-                            //.setSmallIcon(R.drawable.ic_call_white_24px)
+                            .setSmallIcon(iconIdentifier)
                             .setContentTitle("Incoming Call")
                             .setContentText(callInvite.getFrom() + " is calling.")
-                            .setAutoCancel(true)
+                            //.setAutoCancel(true)
                             .setExtras(extras)
                             .setContentIntent(pendingIntent)
                             .setGroup("voice_app_notification")
                             .setColor(Color.rgb(225, 225, 225));
 
+            Log.d(TAG, "showNotification(): built notification");
+
             notificationManager.notify(notificationId, notificationBuilder.build());
+
+            Log.d(TAG, "showNotification(): show notification");
         } else {
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
                 /*
@@ -144,6 +156,9 @@ public class VoiceGCMListenerService extends GcmListenerService {
      * Send the IncomingCallMessage to the Plugin
      */
     private void sendCallInviteToPlugin(CallInvite incomingCallMessage, int notificationId) {
+
+
+
         Intent intent = new Intent(TwilioVoicePlugin.ACTION_INCOMING_CALL);
         intent.putExtra(TwilioVoicePlugin.INCOMING_CALL_INVITE, incomingCallMessage);
         intent.putExtra(TwilioVoicePlugin.INCOMING_CALL_NOTIFICATION_ID, notificationId);

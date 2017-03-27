@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.media.AudioManager;
+import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
@@ -26,7 +27,9 @@ import com.twilio.voice.RegistrationListener;
 import com.twilio.voice.VoiceClient;
 
 import org.apache.cordova.CallbackContext;
+import org.apache.cordova.CordovaInterface;
 import org.apache.cordova.CordovaPlugin;
+import org.apache.cordova.CordovaWebView;
 import org.apache.cordova.PluginResult;
 import org.apache.cordova.PluginResult.Status;
 import org.json.JSONArray;
@@ -70,6 +73,9 @@ public class TwilioVoicePlugin extends CordovaPlugin {
 	// Has the plugin been initialized
 	private boolean mInitialized = false;
 
+	// An incoming call intent to process (can be null)
+	private Intent mIncomingCallIntent;
+
 	// Marshmallow Permissions
 	public static final String RECORD_AUDIO = Manifest.permission.RECORD_AUDIO;
 	public static final int RECORD_AUDIO_REQ_CODE = 0;
@@ -111,6 +117,30 @@ public class TwilioVoicePlugin extends CordovaPlugin {
 		}
 	};
 
+	@Override
+	public void initialize(CordovaInterface cordova, CordovaWebView webView) {
+		super.initialize(cordova, webView);
+		Log.d(TAG, "initialize()");
+
+
+        // initialize sound SoundPoolManager
+        SoundPoolManager.getInstance(cordova.getActivity());
+
+		// Handle an incoming call intent if launched from a notification
+		Intent intent = cordova.getActivity().getIntent();
+		if (intent.getAction().equals(ACTION_INCOMING_CALL)) {
+			mIncomingCallIntent = intent;
+		}
+	}
+
+	@Override
+	public void onRestoreStateForActivityResult(Bundle state, CallbackContext callbackContext) {
+		super.onRestoreStateForActivityResult(state, callbackContext);
+		Log.d(TAG, "onRestoreStateForActivityResult()");
+		mInitCallbackContext = callbackContext;
+	}
+
+
 	/**
 	 * Android Cordova Action Router
 	 * 
@@ -146,8 +176,6 @@ public class TwilioVoicePlugin extends CordovaPlugin {
             LocalBroadcastManager lbm = LocalBroadcastManager.getInstance(cordova.getActivity());
             lbm.registerReceiver(mBroadcastReceiver, intentFilter);
 
-            // initialize sound SoundPoolManager
-            SoundPoolManager.getInstance(cordova.getActivity());
 
 			if(cordova.hasPermission(RECORD_AUDIO))
 			{
@@ -157,6 +185,13 @@ public class TwilioVoicePlugin extends CordovaPlugin {
 			{
 				cordova.requestPermission(this, RECORD_AUDIO_REQ_CODE, RECORD_AUDIO);
 			}
+
+			if (mIncomingCallIntent != null) {
+				Log.d(TAG, "initialize(): Handle an incoming call");
+			 	handleIncomingCallIntent(mIncomingCallIntent);
+				mIncomingCallIntent = null;
+			}
+
 			return true;
 
 		} else if ("call".equals(action)) {

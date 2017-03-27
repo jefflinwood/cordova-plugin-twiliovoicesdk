@@ -56,7 +56,7 @@ public class SoundPoolManager {
     }
 
     public void playRinging() {
-        if (loaded && !playing) {
+        if (loaded && !playing && soundPool != null) {
             ringingStreamId = soundPool.play(ringingSoundId, volume, volume, 1, -1, 1f);
             playing = true;
         }
