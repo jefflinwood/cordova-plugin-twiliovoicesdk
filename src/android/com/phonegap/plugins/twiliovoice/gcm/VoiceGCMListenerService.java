@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
+import android.net.Uri;
 import android.service.notification.StatusBarNotification;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.app.NotificationCompat;
@@ -105,12 +106,15 @@ public class VoiceGCMListenerService extends GcmListenerService {
              * Create the notification shown in the notification drawer
              */
             int iconIdentifier = getResources().getIdentifier("icon", "mipmap", getPackageName());
+            int ringingResourceId =  getResources().getIdentifier("ringing", "raw", getPackageName());
             NotificationCompat.Builder notificationBuilder =
                     new NotificationCompat.Builder(this)
                             .setSmallIcon(iconIdentifier)
                             .setContentTitle("Incoming Call")
                             .setContentText(callInvite.getFrom() + " is calling.")
-                            //.setAutoCancel(true)
+                            .setAutoCancel(true)
+                            .setSound(Uri.parse("android.resource://"
+                                + getPackageName() + "/" + ringingResourceId))
                             .setExtras(extras)
                             .setContentIntent(pendingIntent)
                             .setGroup("voice_app_notification")
