@@ -23,6 +23,7 @@
      <!-- android -->
     <platform name="android">
         <config-file target="AndroidManifest.xml" parent="/manifest">
+            <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
             <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
             <uses-permission android:name="android.permission.WAKE_LOCK" />
             <uses-permission android:name="$PACKAGE_NAME.permission.C2D_MESSAGE" />
@@ -30,7 +31,12 @@
         </config-file>
 
         <config-file target="AndroidManifest.xml" parent="/manifest/application">
-             
+        
+        <receiver android:name="com.phonegap.plugins.twiliovoice.BootCompletedReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+            </intent-filter>
+        </receiver>     
 
         <receiver
             android:name="com.google.android.gms.gcm.GcmReceiver"
@@ -85,6 +91,8 @@
         <source-file src="src/android/com/phonegap/plugins/twiliovoice/TwilioVoicePlugin.java"
                 target-dir="src/com/phonegap/plugins/twiliovoice" />
         <source-file src="src/android/com/phonegap/plugins/twiliovoice/SoundPoolManager.java"
+                target-dir="src/com/phonegap/plugins/twiliovoice" />
+        <source-file src="src/android/com/phonegap/plugins/twiliovoice/BootCompletedReceiver.java"
                 target-dir="src/com/phonegap/plugins/twiliovoice" />
         <source-file src="src/android/com/phonegap/plugins/twiliovoice/gcm/GCMRegistrationService.java"
                 target-dir="src/com/phonegap/plugins/twiliovoice/gcm" />
