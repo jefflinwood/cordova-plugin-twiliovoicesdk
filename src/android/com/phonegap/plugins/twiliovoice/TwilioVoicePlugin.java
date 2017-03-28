@@ -288,15 +288,20 @@ public class TwilioVoicePlugin extends CordovaPlugin {
 	}*/
 
 
-	private void call(JSONArray arguments, CallbackContext callbackContext) {
-		String accessToken = arguments.optString(0,mAccessToken);
-		JSONObject options = arguments.optJSONObject(1);
-		Map<String, String> map = getMap(options);
-		if (mCall != null && mCall.getState().equals(CallState.CONNECTED)) {
-			mCall.disconnect();
-		}
-		mCall = VoiceClient.call(cordova.getActivity(),accessToken, map, mCallListener);
-		Log.d(TAG, "Placing call with params: " + map.toString());
+	private void call(final JSONArray arguments, final CallbackContext callbackContext) {
+		cordova.getThreadPool().execute(new Runnable(){
+			public void run() {
+				String accessToken = arguments.optString(0,mAccessToken);
+				JSONObject options = arguments.optJSONObject(1);
+				Map<String, String> map = getMap(options);
+				if (mCall != null && mCall.getState().equals(CallState.CONNECTED)) {
+					mCall.disconnect();
+				}
+				mCall = VoiceClient.call(cordova.getActivity(),accessToken, map, mCallListener);
+				Log.d(TAG, "Placing call with params: " + map.toString());
+			}
+		});
+		
 	}
 
 	// helper method to get a map of strings from a JSONObject
@@ -329,64 +334,91 @@ public class TwilioVoicePlugin extends CordovaPlugin {
 		return json;
 	}
 
-	private void acceptCallInvite(JSONArray arguments, CallbackContext callbackContext) {
+	private void acceptCallInvite(JSONArray arguments, final CallbackContext callbackContext) {
 		if (mCallInvite == null) {
 			callbackContext.sendPluginResult(new PluginResult(
 					PluginResult.Status.ERROR));
 			return;
 		}
-		mCallInvite.accept(cordova.getActivity(),mCallListener);
-		callbackContext.success(); 
+		cordova.getThreadPool().execute(new Runnable(){
+			public void run() {
+				mCallInvite.accept(cordova.getActivity(),mCallListener);
+				callbackContext.success(); 
+			}
+		});
+		
 	}
 	
-	private void rejectCallInvite(JSONArray arguments, CallbackContext callbackContext) {
+	private void rejectCallInvite(JSONArray arguments, final CallbackContext callbackContext) {
 		if (mCallInvite == null) {
 			callbackContext.sendPluginResult(new PluginResult(
 					PluginResult.Status.ERROR));
 			return;
 		}
-		mCallInvite.reject(cordova.getActivity());
-		callbackContext.success(); 
+		cordova.getThreadPool().execute(new Runnable(){
+			public void run() {
+				mCallInvite.reject(cordova.getActivity());
+				callbackContext.success(); 
+			}
+		});
 	}
 	
-	private void disconnect(JSONArray arguments, CallbackContext callbackContext) {
+	private void disconnect(JSONArray arguments, final CallbackContext callbackContext) {
 		if (mCall == null) {
 			callbackContext.sendPluginResult(new PluginResult(
 					PluginResult.Status.ERROR));
 			return;
 		}
-		mCall.disconnect();
-		callbackContext.success();
+		cordova.getThreadPool().execute(new Runnable(){
+			public void run() {
+				mCall.disconnect();
+				callbackContext.success(); 
+			}
+		});
 	}
 
-	private void sendDigits(JSONArray arguments,
-			CallbackContext callbackContext) {
+	private void sendDigits(final JSONArray arguments,
+			final CallbackContext callbackContext) {
 		if (arguments == null || arguments.length() < 1 || mCall == null) {
 			callbackContext.sendPluginResult(new PluginResult(
 					PluginResult.Status.ERROR));
 			return;
 		}
-		mCall.sendDigits(arguments.optString(0));
+		cordova.getThreadPool().execute(new Runnable(){
+			public void run() {
+				mCall.sendDigits(arguments.optString(0));
+				callbackContext.success(); 
+			}
+		});
+		
 	}
 	
-	private void muteCall(CallbackContext callbackContext) {
+	private void muteCall(final CallbackContext callbackContext) {
 		if (mCall == null) {
 			callbackContext.sendPluginResult(new PluginResult(
 					PluginResult.Status.ERROR));
 			return;
 		}
-		mCall.mute(true);
-		callbackContext.success();
+		cordova.getThreadPool().execute(new Runnable(){
+			public void run() {
+				mCall.mute(true);
+				callbackContext.success(); 
+			}
+		});
 	}
 
-    private void unmuteCall(CallbackContext callbackContext) {
+    private void unmuteCall(final CallbackContext callbackContext) {
 		if (mCall == null) {
 			callbackContext.sendPluginResult(new PluginResult(
 					PluginResult.Status.ERROR));
 			return;
 		}
-		mCall.mute(false);
-		callbackContext.success();
+		cordova.getThreadPool().execute(new Runnable(){
+			public void run() {
+				mCall.mute(false);
+				callbackContext.success(); 
+			}
+		});
 	}
 
     private void isCallMuted(CallbackContext callbackContext) {
@@ -454,21 +486,25 @@ public class TwilioVoicePlugin extends CordovaPlugin {
 	 * 
 	 * 	@param mode	Speaker Mode
 	 * */
-	public void setSpeaker(JSONArray arguments, final CallbackContext callbackContext) {
-		Context context = cordova.getActivity().getApplicationContext();
-		AudioManager m_amAudioManager;
-        m_amAudioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
-        String mode = arguments.optString(0);
-        if(mode.equals("on")) {
-        	Log.d(TAG, "SPEAKER");
-        	m_amAudioManager.setMode(AudioManager.MODE_NORMAL);
-        	m_amAudioManager.setSpeakerphoneOn(true);        	
-        }
-        else {
-        	Log.d(TAG, "EARPIECE");
-        	m_amAudioManager.setMode(AudioManager.MODE_IN_CALL); 
-        	m_amAudioManager.setSpeakerphoneOn(false);
-        }
+	public void setSpeaker(final JSONArray arguments, final CallbackContext callbackContext) {
+		cordova.getThreadPool().execute(new Runnable(){
+			public void run() {
+				Context context = cordova.getActivity().getApplicationContext();
+				AudioManager m_amAudioManager;
+				m_amAudioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+				String mode = arguments.optString(0);
+				if(mode.equals("on")) {
+					Log.d(TAG, "SPEAKER");
+					m_amAudioManager.setMode(AudioManager.MODE_NORMAL);
+					m_amAudioManager.setSpeakerphoneOn(true);        	
+				}
+				else {
+					Log.d(TAG, "EARPIECE");
+					m_amAudioManager.setMode(AudioManager.MODE_IN_CALL); 
+					m_amAudioManager.setSpeakerphoneOn(false);
+				}
+			}
+		});
 	}
 
 	// Plugin-to-Javascript communication methods
