@@ -192,6 +192,8 @@ public class TwilioVoicePlugin extends CordovaPlugin {
 				mIncomingCallIntent = null;
 			}
 
+			javascriptCallback("onclientinitialized",mInitCallbackContext);
+
 			return true;
 
 		} else if ("call".equals(action)) {

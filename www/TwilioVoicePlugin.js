@@ -64,6 +64,11 @@
         delegate['onerror'] = fn;
     }
 
+    TwilioPlugin.TwilioVoiceClient.prototype.clientinitialized = function(fn) {
+        delegate['onclientinitialized'] = fn;
+    }
+
+
     TwilioPlugin.TwilioVoiceClient.prototype.callinvitereceived = function(fn) {
         delegate['oncallinvitereceived'] = fn;
     }

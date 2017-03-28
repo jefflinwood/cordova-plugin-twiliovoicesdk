@@ -78,6 +78,8 @@
         [self.callKitProvider setDelegate:self queue:nil];
         
         self.callKitCallController = [[CXCallController alloc] init];
+
+        [self javascriptCallback:@"onclientinitialized"];
     }
     
 }
