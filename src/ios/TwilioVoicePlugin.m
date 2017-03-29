@@ -327,6 +327,16 @@
 
 #pragma mark - CXProviderDelegate - based on Twilio Voice with CallKit Quickstart ObjC
 
+- (void)provider:(CXProvider *)provider performPlayDTMFCallAction:(CXPlayDTMFCallAction *)action {
+    if (self.call) {
+        NSLog(@"Sending Digits: %@", action.digits);
+        [self.call sendDigits:action.digits];
+    } else {
+        NSLog(@"No current call");
+    }
+    
+}
+
 // All CallKit Integration Code comes from https://github.com/twilio/voice-callkit-quickstart-objc/blob/master/ObjCVoiceCallKitQuickstart/ViewController.m
 
 - (void)providerDidReset:(CXProvider *)provider {
