@@ -39,7 +39,7 @@
         </receiver>     
 
         <receiver
-            android:name="com.google.android.gms.gcm.GcmReceiver"
+            android:name="com.phonegap.plugins.twiliovoice.gcm.GcmReceiver"
             android:exported="true"
             android:permission="com.google.android.c2dm.permission.SEND">
             <intent-filter>
@@ -94,6 +94,8 @@
                 target-dir="src/com/phonegap/plugins/twiliovoice" />
         <source-file src="src/android/com/phonegap/plugins/twiliovoice/BootCompletedReceiver.java"
                 target-dir="src/com/phonegap/plugins/twiliovoice" />
+        <source-file src="src/android/com/phonegap/plugins/twiliovoice/gcm/GcmReceiver.java"
+                target-dir="src/com/phonegap/plugins/twiliovoice/gcm" />
         <source-file src="src/android/com/phonegap/plugins/twiliovoice/gcm/GCMRegistrationService.java"
                 target-dir="src/com/phonegap/plugins/twiliovoice/gcm" />
         <source-file src="src/android/com/phonegap/plugins/twiliovoice/gcm/VoiceGCMListenerService.java"
