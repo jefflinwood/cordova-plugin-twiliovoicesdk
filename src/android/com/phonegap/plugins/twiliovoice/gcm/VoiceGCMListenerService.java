@@ -6,6 +6,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ResolveInfo;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
@@ -20,6 +21,7 @@ import com.google.android.gms.gcm.GcmListenerService;
 
 import com.phonegap.plugins.twiliovoice.TwilioVoicePlugin;
 
+import java.util.List;
 
 import static android.R.attr.data;
 
@@ -55,7 +57,7 @@ public class VoiceGCMListenerService extends GcmListenerService {
         Log.d(TAG, "Bundle data: " + bundle.toString());
 
         if (CallInvite.isValidMessage(bundle)) {
-             /*
+            /*
              * Generate a unique notification id using the system time
              */
             int notificationId = (int) System.currentTimeMillis();
@@ -65,6 +67,33 @@ public class VoiceGCMListenerService extends GcmListenerService {
             CallInvite callInvite = CallInvite.create(bundle);
             sendCallInviteToPlugin(callInvite, notificationId);
             showNotification(callInvite, notificationId);
+        } else {
+            Log.d(TAG, "Invalid CallInvite Message");
+
+            // from http://stackoverflow.com/a/32066691
+            Intent passThroughIntent = new Intent();
+            bundle.putString("from", from);
+            passThroughIntent.putExtras(bundle);
+            passThroughIntent.setAction("com.google.android.c2dm.intent.RECEIVE");
+            passThroughIntent.setComponent(null);
+
+            // from https://github.com/intercom/intercom-cordova/pull/166/files
+            List<ResolveInfo> services = getPackageManager().queryIntentServices(passThroughIntent, 0);
+            for(ResolveInfo info : services) {
+                try {
+                    Class serviceClass = Class.forName(info.serviceInfo.name);
+                    if (serviceClass == this.getClass()) {
+                        continue;
+                    }
+
+                    Context applicationContext = getApplicationContext();
+                    passThroughIntent.setClass(applicationContext, serviceClass);
+                    applicationContext.startService(passThroughIntent);
+                    return;
+                } catch (ClassNotFoundException e) {
+                    // Class not found. Try the next service
+                }
+            }
         }
     }
 
@@ -82,7 +111,7 @@ public class VoiceGCMListenerService extends GcmListenerService {
              * Create a PendingIntent to specify the action when the notification is
              * selected in the notification drawer
              */
-            
+
             //start up the launch activity for the app (Cordova)
             Intent intent = getPackageManager().getLaunchIntentForPackage(getPackageName());
             intent.setAction(TwilioVoicePlugin.ACTION_INCOMING_CALL);
