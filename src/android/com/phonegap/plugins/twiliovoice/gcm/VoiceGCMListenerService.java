@@ -69,7 +69,7 @@ public class VoiceGCMListenerService extends GcmListenerService {
                 sendCallInviteToPlugin(callInvite, notificationId);
                 showNotification(callInvite, notificationId);
             } else {
-                Log.e(TAG, "Error: Bundle was not able to be created from CallInvite");
+                Log.e(TAG, "Error: CallInvite was not able to be created from Bundle");
             }
         } else {
             Log.d(TAG, "Invalid CallInvite Message");
