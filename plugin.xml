@@ -20,6 +20,9 @@
     <!-- Necessary for Android Push notification support with GCM for Twilio Voice -->
     <preference name="GCM_SENDER_ID" default=""/>
 
+    <!-- Necessary to set app name for incoming call notifications on Android and CallKit on iOS -->
+    <preference name="INCOMING_CALL_APP_NAME" default=""/>
+
      <!-- android -->
     <platform name="android">
         <config-file target="AndroidManifest.xml" parent="/manifest">
@@ -83,6 +86,7 @@
 
         <config-file target="res/values/strings.xml" parent="/resources">
             <string name="gcm_sender_id" translatable="false">$GCM_SENDER_ID</string>
+            <string name="incoming_call_app_name" translatable="false">$INCOMING_CALL_APP_NAME</string>
         </config-file>
         
         <framework src="com.google.android.gms:play-services-gcm:9.4.0" />
@@ -128,6 +132,12 @@
         <!-- Add Privacy Description for Microphone Usage -->
         <config-file target="*-Info.plist" parent="NSMicrophoneUsageDescription">
           <string>The app uses the microphone for voice calls</string>
+        </config-file>
+
+        
+        <!-- Add Incoming Call App Name for CallKit -->
+        <config-file target="*-Info.plist" parent="TVPIncomingCallAppName">
+          <string>$INCOMING_CALL_APP_NAME</string>
         </config-file>
 
         <!-- Add push entitlements -->
