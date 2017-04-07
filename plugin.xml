@@ -30,6 +30,8 @@
             <permission android:name="$PACKAGE_NAME.permission.C2D_MESSAGE" android:protectionLevel="signature"/>
         </config-file>
 
+        <dependency id="phonegap-plugin-push"/>
+
         <config-file target="AndroidManifest.xml" parent="/manifest/application">
         
         <receiver android:name="com.phonegap.plugins.twiliovoice.BootCompletedReceiver">
@@ -37,18 +39,6 @@
                 <action android:name="android.intent.action.BOOT_COMPLETED"/>
             </intent-filter>
         </receiver>     
-
-        <receiver
-            android:name="com.phonegap.plugins.twiliovoice.gcm.GcmReceiver"
-            android:exported="true"
-            android:permission="com.google.android.c2dm.permission.SEND">
-            <intent-filter>
-                <action android:name="com.google.android.c2dm.intent.RECEIVE" />
-                <action android:name="com.google.android.c2dm.intent.REGISTRATION" />
-
-                <category android:name="$PACKAGE_NAME" />
-            </intent-filter>
-        </receiver>
 
         <service
             android:name="com.phonegap.plugins.twiliovoice.gcm.VoiceGCMListenerService"
@@ -116,6 +106,9 @@
                 value="TwilioVoicePlugin"/>
           </feature>
         </config-file>
+
+        <!-- <framework src="TwilioVoiceClient" type="podspec" spec="=2.0.0-beta6" /> -->
+
 
         <!-- Add support for background VOIP and audio to the plist -->
         <config-file target="*-Info.plist" parent="UIBackgroundModes">
