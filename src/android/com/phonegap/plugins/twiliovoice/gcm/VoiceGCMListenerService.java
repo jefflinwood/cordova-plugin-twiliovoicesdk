@@ -10,6 +10,7 @@ import android.content.pm.ResolveInfo;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.PowerManager;
 import android.net.Uri;
 import android.service.notification.StatusBarNotification;
 import android.support.v4.content.LocalBroadcastManager;
@@ -156,6 +157,21 @@ public class VoiceGCMListenerService extends GcmListenerService {
             Log.d(TAG, "showNotification(): built notification");
 
             notificationManager.notify(notificationId, notificationBuilder.build());
+
+            /**
+            * http://stackoverflow.com/questions/39385616/how-to-set-that-screen-on-device-is-on-and-vibrate-when-notification-comes
+            * Turn on the screen when a notification arrives
+            */
+            int seconds = 5;
+            PowerManager pm = (PowerManager)getSystemService(Context.POWER_SERVICE);
+            boolean isScreenOn = pm.isScreenOn();
+            if( !isScreenOn )
+            {
+                PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.FULL_WAKE_LOCK |PowerManager.ACQUIRE_CAUSES_WAKEUP |PowerManager.ON_AFTER_RELEASE,"VoicePluginLock");
+                wl.acquire(seconds*1000);
+                PowerManager.WakeLock wl_cpu = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,"VoicePluginCpuLock");
+                wl_cpu.acquire(seconds*1000);
+            }
 
             Log.d(TAG, "showNotification(): show notification");
         } else {
