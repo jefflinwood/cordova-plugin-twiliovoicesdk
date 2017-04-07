@@ -164,7 +164,7 @@ public class VoiceGCMListenerService extends GcmListenerService {
             * http://stackoverflow.com/questions/39385616/how-to-set-that-screen-on-device-is-on-and-vibrate-when-notification-comes
             * Turn on the screen when a notification arrives
             */
-            int seconds = 5;
+            int seconds = 60;
             PowerManager pm = (PowerManager)getSystemService(Context.POWER_SERVICE);
             boolean isScreenOn = pm.isScreenOn();
             if( !isScreenOn )
