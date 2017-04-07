@@ -67,7 +67,8 @@
         self.voipPushRegistry.desiredPushTypes = [NSSet setWithObject:PKPushTypeVoIP];
         
         // initialize CallKit (based on Twilio ObjCVoiceCallKitQuickstart)
-        CXProviderConfiguration *configuration = [[CXProviderConfiguration alloc] initWithLocalizedName:@"Twilio Voice Plugin for PhoneGap"];
+        NSString *incomingCallAppName = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"TVPIncomingCallAppName"];
+        CXProviderConfiguration *configuration = [[CXProviderConfiguration alloc] initWithLocalizedName:incomingCallAppName];
         configuration.maximumCallGroups = 1;
         configuration.maximumCallsPerCallGroup = 1;
         UIImage *callkitIcon = [UIImage imageNamed:@"logo.png"];

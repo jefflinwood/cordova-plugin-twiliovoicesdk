@@ -141,11 +141,13 @@ public class VoiceGCMListenerService extends GcmListenerService {
              */
             int iconIdentifier = getResources().getIdentifier("icon", "mipmap", getPackageName());
             int ringingResourceId =  getResources().getIdentifier("ringing", "raw", getPackageName());
+            int incomingCallAppNameId = getResources().getIdentifier("incoming_call_app_name", "string", getPackageName());
+            String incomingCallAppName = getString(incomingCallAppNameId);
             NotificationCompat.Builder notificationBuilder =
                     new NotificationCompat.Builder(this)
                             .setSmallIcon(iconIdentifier)
-                            .setContentTitle("Incoming Call")
-                            .setContentText(callInvite.getFrom() + " is calling.")
+                            .setContentTitle(incomingCallAppName)
+                            .setContentText(callInvite.getFrom())
                             .setAutoCancel(true)
                             .setSound(Uri.parse("android.resource://"
                                 + getPackageName() + "/" + ringingResourceId))
