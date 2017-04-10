@@ -341,7 +341,7 @@
 // All CallKit Integration Code comes from https://github.com/twilio/voice-callkit-quickstart-objc/blob/master/ObjCVoiceCallKitQuickstart/ViewController.m
 
 - (void)providerDidReset:(CXProvider *)provider {
-    // No implementation
+    [[VoiceClient sharedInstance] stopAudioDevice];
 }
 
 - (void)providerDidBegin:(CXProvider *)provider {
@@ -353,7 +353,7 @@
 }
 
 - (void)provider:(CXProvider *)provider didDeactivateAudioSession:(AVAudioSession *)audioSession {
-    // No implementation
+    [[VoiceClient sharedInstance] stopAudioDevice];
 }
 
 - (void)provider:(CXProvider *)provider timedOutPerformingAction:(CXAction *)action {
