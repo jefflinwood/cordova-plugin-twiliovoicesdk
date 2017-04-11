@@ -142,7 +142,7 @@ public class VoiceGCMListenerService extends GcmListenerService {
             int iconIdentifier = getResources().getIdentifier("icon", "mipmap", getPackageName());
             int ringingResourceId =  getResources().getIdentifier("ringing", "raw", getPackageName());
             int incomingCallAppNameId = getResources().getIdentifier("incoming_call_app_name", "string", getPackageName());
-            String incomingCallAppName = getString(incomingCallAppNameId);
+            final String incomingCallAppName = getString(incomingCallAppNameId);
             NotificationCompat.Builder notificationBuilder =
                     new NotificationCompat.Builder(this)
                             .setSmallIcon(iconIdentifier)
