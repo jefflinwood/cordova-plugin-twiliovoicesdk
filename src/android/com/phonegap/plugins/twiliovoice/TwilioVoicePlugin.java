@@ -612,9 +612,11 @@ public class TwilioVoicePlugin extends CordovaPlugin {
                 } catch (JSONException e) {
                     Log.e(TAG,e.getMessage(),e);
                 }
+				Log.d(TAG,"oncallinvitereceived");
                 javascriptCallback("oncallinvitereceived", callInviteProperties, mInitCallbackContext); 
             } else {
                 SoundPoolManager.getInstance(cordova.getActivity()).stopRinging();
+				Log.d(TAG,"oncallinvitecanceled");
                 javascriptCallback("oncallinvitecanceled",mInitCallbackContext); 
             }
         }
