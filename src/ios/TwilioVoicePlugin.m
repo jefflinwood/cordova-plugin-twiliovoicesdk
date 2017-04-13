@@ -226,6 +226,7 @@
 
 - (void)callInviteCancelled:(TVOCallInvite *)callInvite {
     NSLog(@"Call Invite Cancelled: %@", [callInvite description]);
+    [self performEndCallActionWithUUID:callInvite.uuid];
     self.callInvite = nil;
     [self javascriptCallback:@"oncallinvitecanceled"];
 
