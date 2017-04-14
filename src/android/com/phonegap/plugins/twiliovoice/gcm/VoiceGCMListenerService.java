@@ -61,7 +61,7 @@ public class VoiceGCMListenerService extends GcmListenerService {
             /*
              * Generate a unique notification id using the system time
              */
-            int notificationId = (int) System.currentTimeMillis();
+            int notificationId = (int) (System.currentTimeMillis() % Integer.MAX_VALUE);
             /*
              * Create an CallInvite from the bundle
              */
