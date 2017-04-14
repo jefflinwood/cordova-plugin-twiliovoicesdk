@@ -210,7 +210,7 @@
 
 #pragma mark TVONotificationDelegate
 - (void)callInviteReceived:(TVOCallInvite *)callInvite {
-    NSLog(@"Call Invite Received: %@", [callInvite description]);
+    NSLog(@"Call Invite Received: %@", callInvite.uuid);
     self.callInvite = callInvite;
     NSDictionary *callInviteProperties = @{
                                            @"from":callInvite.from,
@@ -225,7 +225,7 @@
 }
 
 - (void)callInviteCancelled:(TVOCallInvite *)callInvite {
-    NSLog(@"Call Invite Cancelled: %@", [callInvite description]);
+    NSLog(@"Call Invite Cancelled: %@", callInvite.uuid);
     [self performEndCallActionWithUUID:callInvite.uuid];
     self.callInvite = nil;
     [self javascriptCallback:@"oncallinvitecanceled"];
