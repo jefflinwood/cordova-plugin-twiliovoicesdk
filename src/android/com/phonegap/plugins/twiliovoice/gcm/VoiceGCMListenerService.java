@@ -143,7 +143,7 @@ public class VoiceGCMListenerService extends GcmListenerService {
             int ringingResourceId =  getResources().getIdentifier("ringing", "raw", getPackageName());
             int incomingCallAppNameId = getResources().getIdentifier("incoming_call_app_name", "string", getPackageName());
             final String incomingCallAppName = getString(incomingCallAppNameId);
-            final String from = callInvite.getFrom();
+            final String from = callInvite.getFrom() + " ";
 
             Log.d(TAG, "Call Invite from: " + from);
 
