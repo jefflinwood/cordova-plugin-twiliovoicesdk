@@ -144,6 +144,9 @@ public class VoiceGCMListenerService extends GcmListenerService {
             int incomingCallAppNameId = getResources().getIdentifier("incoming_call_app_name", "string", getPackageName());
             final String incomingCallAppName = getString(incomingCallAppNameId);
             final String from = callInvite.getFrom();
+
+            Log.d(TAG, "Call Invite from: " + from);
+
             NotificationCompat.Builder notificationBuilder =
                     new NotificationCompat.Builder(this)
                             .setSmallIcon(iconIdentifier)
@@ -157,7 +160,7 @@ public class VoiceGCMListenerService extends GcmListenerService {
                             .setGroup("voice_app_notification")
                             .setColor(Color.rgb(225, 225, 225));
 
-            Log.d(TAG, "showNotification(): built notification");
+            Log.d(TAG, "showNotification(): building notification");
 
             notificationManager.notify(notificationId, notificationBuilder.build());
 
