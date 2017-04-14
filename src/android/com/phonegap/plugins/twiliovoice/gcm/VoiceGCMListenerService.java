@@ -106,7 +106,7 @@ public class VoiceGCMListenerService extends GcmListenerService {
      * Show the notification in the Android notification drawer
      */
     @TargetApi(Build.VERSION_CODES.KITKAT_WATCH)
-    private void showNotification(CallInvite callInvite, int notificationId) {
+    private void showNotification(CallInvite callInvite, final int notificationId) {
         String callSid = callInvite.getCallSid();
 
         Log.d(TAG, "showNotification()");
@@ -143,11 +143,12 @@ public class VoiceGCMListenerService extends GcmListenerService {
             int ringingResourceId =  getResources().getIdentifier("ringing", "raw", getPackageName());
             int incomingCallAppNameId = getResources().getIdentifier("incoming_call_app_name", "string", getPackageName());
             final String incomingCallAppName = getString(incomingCallAppNameId);
+            final String from = callInvite.getFrom();
             NotificationCompat.Builder notificationBuilder =
                     new NotificationCompat.Builder(this)
                             .setSmallIcon(iconIdentifier)
                             .setContentTitle(incomingCallAppName)
-                            .setContentText(callInvite.getFrom())
+                            .setContentText(from)
                             .setAutoCancel(true)
                             .setSound(Uri.parse("android.resource://"
                                 + getPackageName() + "/" + ringingResourceId))
