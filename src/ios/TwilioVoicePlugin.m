@@ -417,6 +417,8 @@
         return;
     }
     
+    NSLog(@"performStartCallActionWithUUID: %@", [uuid UUIDString]);
+    
     CXHandle *callHandle = [[CXHandle alloc] initWithType:CXHandleTypeGeneric value:handle];
     CXStartCallAction *startCallAction = [[CXStartCallAction alloc] initWithCallUUID:uuid handle:callHandle];
     CXTransaction *transaction = [[CXTransaction alloc] initWithAction:startCallAction];
@@ -441,6 +443,9 @@
 }
 
 - (void)reportIncomingCallFrom:(NSString *) from withUUID:(NSUUID *)uuid {
+    
+    NSLog(@"reportIncomingCallFrom: %@",[uuid UUIDString]);
+    
     CXHandle *callHandle = [[CXHandle alloc] initWithType:CXHandleTypeGeneric value:from];
     
     CXCallUpdate *callUpdate = [[CXCallUpdate alloc] init];
@@ -468,6 +473,8 @@
     if (uuid == nil) {
         return;
     }
+    
+    NSLog(@"performEndCallActionWithUUID: %@", [uuid UUIDString]);
     
     CXEndCallAction *endCallAction = [[CXEndCallAction alloc] initWithCallUUID:uuid];
     CXTransaction *transaction = [[CXTransaction alloc] initWithAction:endCallAction];
