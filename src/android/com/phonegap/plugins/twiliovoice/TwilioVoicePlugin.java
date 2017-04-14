@@ -232,7 +232,10 @@ public class TwilioVoicePlugin extends CordovaPlugin {
 		} else if ("setSpeaker".equals(action)) {
 			setSpeaker(args,callbackContext);
 			return true;
-		}
+		}  else if ("isSpeakerPhoneOn".equals(action)) {
+			isSpeakerPhoneOn(callbackContext);
+			return true;
+		} 
 
 		return false; 
 	}
@@ -503,6 +506,20 @@ public class TwilioVoicePlugin extends CordovaPlugin {
 					m_amAudioManager.setMode(AudioManager.MODE_IN_CALL); 
 					m_amAudioManager.setSpeakerphoneOn(false);
 				}
+			}
+		});
+	}
+
+	private void isSpeakerPhoneOn(CallbackContext callbackContext) {		
+		cordova.getThreadPool().execute(new Runnable(){
+			public void run() {
+				Context context = cordova.getActivity().getApplicationContext();
+				AudioManager m_amAudioManager;
+				m_amAudioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+				boolean isSpeakerphoneOn = m_amAudioManager.isSpeakerphoneOn();        	
+				Log.d("TAG", "isSpeakerPhoneOn: " + isSpeakerphoneOn);
+				PluginResult result = new PluginResult(PluginResult.Status.OK,isSpeakerPhoneOn);
+				callbackContext.sendPluginResult(result);
 			}
 		});
 	}

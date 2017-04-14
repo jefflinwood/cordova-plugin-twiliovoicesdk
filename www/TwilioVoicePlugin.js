@@ -32,6 +32,11 @@
         Cordova.exec(null, null, "TwilioVoicePlugin", "setSpeaker", [mode]);
     }
 
+    TwilioPlugin.TwilioVoiceClient.prototype.isSpeakerPhoneOn = function(fn) {
+        Cordova.exec(fn, null, "TwilioVoicePlugin", "isSpeakerPhoneOn", null);
+    }
+
+
     TwilioPlugin.TwilioVoiceClient.prototype.muteCall = function() {
         Cordova.exec(null, null, "TwilioVoicePlugin", "muteCall", null);
     }
