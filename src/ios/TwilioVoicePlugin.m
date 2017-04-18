@@ -395,7 +395,7 @@
 }
 
 -(void) cancelNotification {
-    [[UNUserNotificationCenter currentNotificationCenter] removeAllPendingNotificationRequests];
+    [[UNUserNotificationCenter currentNotificationCenter] removeAllDeliveredNotifications];
 }
 
 
