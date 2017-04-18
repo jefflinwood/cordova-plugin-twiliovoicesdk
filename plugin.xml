@@ -155,7 +155,7 @@
 
         <resource-file src="sounds/ringing.wav" />
         <info>
-You need to download __Twilio Voice SDK for iOS__ from https://media.twiliocdn.com/sdk/ios/voice/releases/2.0.0-beta6/twilio-voice-ios-2.0.0-beta6.tar.bz2. Uncompress the download - you will need to follow two steps that plugman can not do yet:
+You need to download __Twilio Voice SDK for iOS__ from https://media.twiliocdn.com/sdk/ios/voice/releases/2.0.0-beta7/twilio-voice-ios-2.0.0-beta7.tar.bz2. Uncompress the download - you will need to follow two steps that plugman can not do yet:
 
 * Add the Twilio Voice framework (TwilioVoiceClient.framework) to your Xcode project
 * Add the Twilio Voice framework (TwilioVoiceClient.framework) as an embedded binary to your Xcode project
