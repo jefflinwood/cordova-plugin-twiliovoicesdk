@@ -23,6 +23,9 @@
     <!-- Necessary to set app name for incoming call notifications on Android and CallKit on iOS -->
     <preference name="INCOMING_CALL_APP_NAME" default=""/>
 
+    <!-- Necessary to enable CallKit on iOS -->
+    <preference name="ENABLE_CALL_KIT" default="false"/>
+
      <!-- android -->
     <platform name="android">
         <config-file target="AndroidManifest.xml" parent="/manifest">
@@ -131,6 +134,11 @@
         <!-- Add Incoming Call App Name for CallKit -->
         <config-file target="*-Info.plist" parent="TVPIncomingCallAppName">
           <string>$INCOMING_CALL_APP_NAME</string>
+        </config-file>
+        
+        <!-- Add Enable CallKit Preference to plist -->
+        <config-file target="*-Info.plist" parent="TVPEnableCallKit">
+          <string>$ENABLE_CALL_KIT</string>
         </config-file>
 
         <!-- Add push entitlements -->

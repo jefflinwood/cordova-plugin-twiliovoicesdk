@@ -13,6 +13,7 @@
 @import CallKit;
 @import PushKit;
 @import TwilioVoiceClient;
+@import UserNotifications;
 
 @interface TwilioVoicePlugin () <PKPushRegistryDelegate, TVOCallDelegate, TVONotificationDelegate, CXProviderDelegate>
 
@@ -34,9 +35,14 @@
 // Access Token from Twilio
 @property (nonatomic, strong) NSString *accessToken;
 
+// Configure whether or not to use CallKit via the plist
+// This is a variable from plugin installation (ENABLE_CALLKIT)
+@property (nonatomic, assign) BOOL enableCallKit;
+
 // Call Kit member variables
 @property (nonatomic, strong) CXProvider *callKitProvider;
 @property (nonatomic, strong) CXCallController *callKitCallController;
+
 
 @end
 
@@ -49,6 +55,28 @@
 
     // set log level for development
     [[VoiceClient sharedInstance] setLogLevel:TVOLogLevelOff];
+
+    // read in Enable CallKit preference
+    NSString *enableCallKitPreference = [[[NSBundle mainBundle] objectForInfoDictionaryKey:@"TVPEnableCallKit"] uppercaseString];
+    if ([enableCallKitPreference isEqualToString:@"YES"] || [enableCallKitPreference isEqualToString:@"TRUE"]) {
+        self.enableCallKit = YES;
+    } else {
+        self.enableCallKit = NO;
+    }
+    
+    if (!self.enableCallKit) {
+        //ask for notification support
+        UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
+        UNAuthorizationOptions options = UNAuthorizationOptionAlert + UNAuthorizationOptionSound;
+
+        [center requestAuthorizationWithOptions:options
+                              completionHandler:^(BOOL granted, NSError * _Nullable error) {
+                                  if (!granted) {
+                                      NSLog(@"Notifications not granted");
+                                  }
+                              }];
+        
+    }
     
 }
 
@@ -66,19 +94,21 @@
         self.voipPushRegistry.delegate = self;
         self.voipPushRegistry.desiredPushTypes = [NSSet setWithObject:PKPushTypeVoIP];
         
-        // initialize CallKit (based on Twilio ObjCVoiceCallKitQuickstart)
-        NSString *incomingCallAppName = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"TVPIncomingCallAppName"];
-        CXProviderConfiguration *configuration = [[CXProviderConfiguration alloc] initWithLocalizedName:incomingCallAppName];
-        configuration.maximumCallGroups = 1;
-        configuration.maximumCallsPerCallGroup = 1;
-        UIImage *callkitIcon = [UIImage imageNamed:@"logo.png"];
-        configuration.iconTemplateImageData = UIImagePNGRepresentation(callkitIcon);
-        configuration.ringtoneSound = @"ringing.wav";
-        
-        self.callKitProvider = [[CXProvider alloc] initWithConfiguration:configuration];
-        [self.callKitProvider setDelegate:self queue:nil];
-        
-        self.callKitCallController = [[CXCallController alloc] init];
+        if (self.enableCallKit) {
+            // initialize CallKit (based on Twilio ObjCVoiceCallKitQuickstart)
+            NSString *incomingCallAppName = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"TVPIncomingCallAppName"];
+            CXProviderConfiguration *configuration = [[CXProviderConfiguration alloc] initWithLocalizedName:incomingCallAppName];
+            configuration.maximumCallGroups = 1;
+            configuration.maximumCallsPerCallGroup = 1;
+            UIImage *callkitIcon = [UIImage imageNamed:@"logo.png"];
+            configuration.iconTemplateImageData = UIImagePNGRepresentation(callkitIcon);
+            configuration.ringtoneSound = @"ringing.wav";
+            
+            self.callKitProvider = [[CXProvider alloc] initWithConfiguration:configuration];
+            [self.callKitProvider setDelegate:self queue:nil];
+            
+            self.callKitCallController = [[CXCallController alloc] init];
+        }
 
         [self javascriptCallback:@"onclientinitialized"];
     }
@@ -218,15 +248,22 @@
                                            @"callSid":callInvite.callSid,
                                            @"state":[self stringFromCallInviteState:callInvite.state]
                                            };
-    
-    [self reportIncomingCallFrom:callInvite.from withUUID:callInvite.uuid];
+    if (self.enableCallKit) {
+        [self reportIncomingCallFrom:callInvite.from withUUID:callInvite.uuid];
+    } else {
+        [self showNotification:callInvite.from];
+    }
 
     [self javascriptCallback:@"oncallinvitereceived" withArguments:callInviteProperties];
 }
 
 - (void)callInviteCancelled:(TVOCallInvite *)callInvite {
     NSLog(@"Call Invite Cancelled: %@", callInvite.uuid);
-    [self performEndCallActionWithUUID:callInvite.uuid];
+    if (self.enableCallKit) {
+        [self performEndCallActionWithUUID:callInvite.uuid];
+    } else {
+        [self cancelNotification];
+    }
     self.callInvite = nil;
     [self javascriptCallback:@"oncallinvitecanceled"];
 
@@ -241,6 +278,10 @@
 - (void)callDidConnect:(TVOCall *)call {
     NSLog(@"Call Did Connect: %@", [call description]);
     self.call = call;
+
+    if (!self.enableCallKit) {
+        [self cancelNotification];
+    }
     
     NSMutableDictionary *callProperties = [NSMutableDictionary new];
     if (call.from) {
@@ -265,7 +306,9 @@
     NSLog(@"Call Did Disconnect: %@", [call description]);
     
     // Call Kit Integration
-    [self performEndCallActionWithUUID:call.uuid];
+    if (self.enableCallKit) {
+        [self performEndCallActionWithUUID:call.uuid];
+    }
     
     self.call = nil;
     [self javascriptCallback:@"oncalldiddisconnect"];
@@ -325,6 +368,36 @@
     
     [self.commandDelegate sendPluginResult:result callbackId:self.callback];
 }
+
+#pragma mark - Local Notification methods used if CallKit isn't enabled
+
+-(void) showNotification:(NSString*)alertBody {
+    UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
+
+    [center removeAllPendingNotificationRequests];
+
+    
+    UNMutableNotificationContent *content = [[UNMutableNotificationContent alloc] init];
+    content.sound = [UNNotificationSound soundNamed:@"ringing.wav"];
+    content.title = @"Answer";
+    content.body = alertBody;
+    
+
+    UNNotificationRequest *request = [UNNotificationRequest
+                                      requestWithIdentifier:@"IncomingCall" content:content trigger:nil];
+    
+    [center addNotificationRequest:request withCompletionHandler:^(NSError * _Nullable error) {
+        if (error != nil) {
+            NSLog(@"Error adding local notification for incoming call: %@", error.localizedDescription);
+        }
+    }];
+
+}
+
+-(void) cancelNotification {
+    [[UNUserNotificationCenter currentNotificationCenter] removeAllPendingNotificationRequests];
+}
+
 
 
 #pragma mark - CXProviderDelegate - based on Twilio Voice with CallKit Quickstart ObjC
