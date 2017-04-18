@@ -142,7 +142,12 @@ public class VoiceGCMListenerService extends GcmListenerService {
             int iconIdentifier = getResources().getIdentifier("icon", "mipmap", getPackageName());
             int ringingResourceId =  getResources().getIdentifier("ringing", "raw", getPackageName());
             int incomingCallAppNameId = getResources().getIdentifier("incoming_call_app_name", "string", getPackageName());
-            final String incomingCallAppName = getString(incomingCallAppNameId);
+            Log.d(TAG, "Incoming Call App Name Id: " + incomingCallAppNameId);
+            String contentTitle = getString(incomingCallAppNameId);
+            Log.d(TAG, "Content Title: " + contentTitle);
+            if (contentTitle == null) {
+                contentTitle = "Incoming Call";
+            }
             final String from = callInvite.getFrom() + " ";
 
             Log.d(TAG, "Call Invite from: " + from);
@@ -150,7 +155,7 @@ public class VoiceGCMListenerService extends GcmListenerService {
             NotificationCompat.Builder notificationBuilder =
                     new NotificationCompat.Builder(this)
                             .setSmallIcon(iconIdentifier)
-                            .setContentTitle(incomingCallAppName)
+                            .setContentTitle(contentTitle)
                             .setContentText(from)
                             .setAutoCancel(true)
                             .setSound(Uri.parse("android.resource://"
