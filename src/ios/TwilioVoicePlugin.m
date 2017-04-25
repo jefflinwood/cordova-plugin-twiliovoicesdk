@@ -166,11 +166,19 @@
     if (self.callInvite) {
         [self.callInvite acceptWithDelegate:self];
     }
+    if ([self.ringtonePlayer isPlaying]) {
+        //pause ringtone
+        [self.ringtonePlayer pause];
+    }
 }
 
 - (void) rejectCallInvite: (CDVInvokedUrlCommand*)command {
     if (self.callInvite) {
         [self.callInvite reject];
+    }
+    if ([self.ringtonePlayer isPlaying]) {
+        //pause ringtone
+        [self.ringtonePlayer pause];
     }
 }
 
