@@ -43,6 +43,9 @@
 @property (nonatomic, strong) CXProvider *callKitProvider;
 @property (nonatomic, strong) CXCallController *callKitCallController;
 
+// Ringing Audio Player
+@property (nonatomic, strong) AVAudioPlayer *ringtonePlayer;
+
 
 @end
 
@@ -76,6 +79,19 @@
                                   }
                               }];
         
+        // initialize ringtone player
+        NSURL *ringtoneURL = [[NSBundle mainBundle] URLForResource:@"ringing.wav" withExtension:nil];
+        if (ringtoneURL) {
+            NSError *error = nil;
+            self.ringtonePlayer = [[AVAudioPlayer alloc] initWithContentsOfURL:ringtoneURL error:&error];
+            if (error) {
+                NSLog(@"Error initializing ring tone player: %@",[error localizedDescription]);
+            } else {
+                //looping ring
+                self.ringtonePlayer.numberOfLoops = -1;
+                [self.ringtonePlayer prepareToPlay];
+            }
+        }
     }
     
 }
@@ -252,6 +268,8 @@
         [self reportIncomingCallFrom:callInvite.from withUUID:callInvite.uuid];
     } else {
         [self showNotification:callInvite.from];
+        //play ringtone
+        [self.ringtonePlayer play];
     }
 
     [self javascriptCallback:@"oncallinvitereceived" withArguments:callInviteProperties];
@@ -263,6 +281,8 @@
         [self performEndCallActionWithUUID:callInvite.uuid];
     } else {
         [self cancelNotification];
+        //pause ringtone
+        [self.ringtonePlayer pause];
     }
     self.callInvite = nil;
     [self javascriptCallback:@"oncallinvitecanceled"];
@@ -281,6 +301,10 @@
 
     if (!self.enableCallKit) {
         [self cancelNotification];
+        if ([self.ringtonePlayer isPlaying]) {
+            //pause ringtone
+            [self.ringtonePlayer pause];
+        }
     }
     
     NSMutableDictionary *callProperties = [NSMutableDictionary new];
