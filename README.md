@@ -12,8 +12,15 @@ https://www.twilio.com/docs/api/voice-sdk
 If you are using the Twilio Client SDK for iOS and Android, see the earlier Twilio Client Plugin
 https://github.com/jefflinwood/twilio_client_phonegap
 
-on NPM:
-https://www.npmjs.com/package/twilio-voice-phonegap-plugin
+## Available on NPM
+
+```
+cordova plugin add twilio-voice-phonegap-plugin
+```
+
+The NPM Page for this plugin: https://www.npmjs.com/package/twilio-voice-phonegap-plugin
+
+## Preferences
 
 There are three preferences you will need to configure:
 
