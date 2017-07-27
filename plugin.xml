@@ -9,11 +9,9 @@
     <author>Jeff Linwood/Stevie Graham/Lyle Pratt</author>
     <license>MIT</license>
 
-<!--     <asset src="www/TwilioVoicePlugin.js" target="js/TwilioVoicePlugin.js" /> -->
+     <asset src="www/TwilioVoicePlugin.js" target="js/TwilioVoicePlugin.js" /> 
 
-    <js-module src="www/TwilioVoicePlugin.js" name="Twilio">
-        <clobbers target="twilio.plugin" />
-    </js-module>
+
     
     <engines>
         <engine name="cordova" version=">=6.4.0"/>
