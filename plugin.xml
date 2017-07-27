@@ -49,7 +49,7 @@
         </receiver>     
 
         <service
-            android:name="com.phonegap.plugins.twiliovoice.gcm.VoiceGCMListenerService"
+            android:name=".gcm.VoiceGCMListenerService"
             android:exported="false">
             <intent-filter android:priority="999">
                 <action android:name="com.google.android.c2dm.intent.RECEIVE" />
@@ -57,7 +57,7 @@
         </service>
 
         <service
-            android:name="com.phonegap.plugins.twiliovoice.gcm.VoiceInstanceIDListenerService"
+            android:name=".gcm.VoiceInstanceIDListenerService"
             android:exported="false">
             <intent-filter>
                 <action android:name="com.google.android.gms.iid.InstanceID" />
@@ -65,7 +65,7 @@
         </service>
 
         <service
-            android:name="com.phonegap.plugins.twiliovoice.gcm.GCMRegistrationService"
+            android:name=".gcm.GCMRegistrationService"
             android:exported="false"></service>
 
         <meta-data
