@@ -347,7 +347,7 @@
     }
     
     [self performEndCallActionWithUUID:call.uuid];
-    [self callDisconnected];
+    [self callDisconnected:call];
 }
 
 - (void)callDisconnected:(TVOCall *)call {
