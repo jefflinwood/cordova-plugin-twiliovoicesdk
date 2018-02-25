@@ -304,14 +304,18 @@
     NSLog(@"Call Did Fail with Error: %@, %@", [call description], [error localizedDescription]);
     self.call = nil;
     [self callDisconnected:call];
-    [self javascriptErrorback:error];
+    if (error) {
+        [self javascriptErrorback:error];
+    }
 }
 
 - (void)call:(TVOCall *)call didDisconnectWithError:(NSError *)error {
     NSLog(@"Call Did Fail with Error: %@, %@", [call description], [error localizedDescription]);
     self.call = nil;
     [self callDisconnected:call];
-    [self javascriptErrorback:error];
+    if (error) {
+        [self javascriptErrorback:error];
+    }
 }
 
 - (void)callDisconnected:(TVOCall *)call {
