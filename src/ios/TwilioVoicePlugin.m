@@ -45,6 +45,8 @@
 @property (nonatomic, strong) CXCallController *callKitCallController;
 @property (nonatomic, strong) void(^callKitCompletionCallback)(BOOL);
 
+// Ringing Audio Player
+@property (nonatomic, strong) AVAudioPlayer *ringtonePlayer;
 
 @end
 
@@ -77,7 +79,20 @@
                                       NSLog(@"Notifications not granted");
                                   }
                               }];
-        
+
+        // initialize ringtone player
+        NSURL *ringtoneURL = [[NSBundle mainBundle] URLForResource:@"ringing.wav" withExtension:nil];
+        if (ringtoneURL) {
+            NSError *error = nil;
+            self.ringtonePlayer = [[AVAudioPlayer alloc] initWithContentsOfURL:ringtoneURL error:&error];
+            if (error) {
+                NSLog(@"Error initializing ring tone player: %@",[error localizedDescription]);
+            } else {
+                //looping ring
+                self.ringtonePlayer.numberOfLoops = -1;
+                [self.ringtonePlayer prepareToPlay];
+            }
+        }
     }
     
 }
@@ -152,11 +167,19 @@
     if (self.callInvite) {
         [self.callInvite acceptWithDelegate:self];
     }
+    if ([self.ringtonePlayer isPlaying]) {
+        //pause ringtone
+        [self.ringtonePlayer pause];
+    }
 }
 
 - (void) rejectCallInvite: (CDVInvokedUrlCommand*)command {
     if (self.callInvite) {
         [self.callInvite reject];
+    }
+    if ([self.ringtonePlayer isPlaying]) {
+        //pause ringtone
+        [self.ringtonePlayer pause];
     }
 }
 
@@ -250,6 +273,8 @@
         [self reportIncomingCallFrom:callInvite.from withUUID:callInvite.uuid];
     } else {
         [self showNotification:callInvite.from];
+        //play ringtone
+        [self.ringtonePlayer play];
     }
 
     [self javascriptCallback:@"oncallinvitereceived" withArguments:callInviteProperties];
@@ -261,6 +286,8 @@
         [self performEndCallActionWithUUID:callInvite.uuid];
     } else {
         [self cancelNotification];
+        //pause ringtone
+        [self.ringtonePlayer pause];
     }
     self.callInvite = nil;
     [self javascriptCallback:@"oncallinvitecanceled"];
@@ -280,6 +307,10 @@
     
     if (!self.enableCallKit) {
         [self cancelNotification];
+        if ([self.ringtonePlayer isPlaying]) {
+            //pause ringtone
+            [self.ringtonePlayer pause];
+        }
     }
     
     NSMutableDictionary *callProperties = [NSMutableDictionary new];
@@ -405,7 +436,7 @@
 }
 
 -(void) cancelNotification {
-    [[UNUserNotificationCenter currentNotificationCenter] removeAllPendingNotificationRequests];
+    [[UNUserNotificationCenter currentNotificationCenter] removeAllDeliveredNotifications];
 }
 
 #pragma mark - CXProviderDelegate - based on Twilio Voice with CallKit Quickstart ObjC
