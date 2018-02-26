@@ -101,6 +101,7 @@
                 target-dir="src/com/phonegap/plugins/twiliovoice/gcm" />
 
         <source-file src="sounds/ringing.wav" target-dir="res/raw"/>
+        <source-file src="sounds/traditionalring.mp3" target-dir="res/raw"/>
 
     </platform>
 
@@ -154,6 +155,7 @@
         <source-file src="src/ios/TwilioVoicePlugin.m" />
 
         <resource-file src="sounds/ringing.wav" />
+        <resource-file src="sounds/traditionalring.mp3" />
         <info>
 You need to download __Twilio Voice SDK for iOS__ from https://media.twiliocdn.com/sdk/ios/voice/latest/twilio-voice-ios.tar.bz2. Uncompress the download - you will need to follow two steps that plugman can not do yet:
 
