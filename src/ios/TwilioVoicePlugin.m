@@ -264,6 +264,14 @@
 
 #pragma mark TVONotificationDelegate
 - (void)callInviteReceived:(TVOCallInvite *)callInvite {
+    if (callInvite.state == TVOCallInviteStatePending) {
+        [self handleCallInviteReceived:callInvite];
+    } else if (callInvite.state == TVOCallInviteStateCanceled) {
+        [self handleCallInviteCanceled:callInvite];
+    }
+}
+
+- (void)handleCallInviteReceived:(TVOCallInvite *)callInvite {
     NSLog(@"Call Invite Received: %@", callInvite.uuid);
     self.callInvite = callInvite;
     NSDictionary *callInviteProperties = @{
@@ -283,7 +291,7 @@
     [self javascriptCallback:@"oncallinvitereceived" withArguments:callInviteProperties];
 }
 
-- (void)callInviteCancelled:(TVOCallInvite *)callInvite {
+- (void)handleCallInviteCanceled:(TVOCallInvite *)callInvite {
     NSLog(@"Call Invite Cancelled: %@", callInvite.uuid);
     if (self.enableCallKit) {
         [self performEndCallActionWithUUID:callInvite.uuid];
