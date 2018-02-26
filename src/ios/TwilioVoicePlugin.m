@@ -158,7 +158,10 @@
 }
 
 - (void) disconnect:(CDVInvokedUrlCommand*)command {
-    if (self.call && self.call.state == TVOCallStateConnected) {
+    if (self.callInvite && self.callInvite.state == TVOCallInviteStatePending) {
+        [self.callInvite reject];
+        self.callInvite = nil;
+    } else if (self.call) {
         [self.call disconnect];
     }
 }
@@ -291,7 +294,6 @@
     }
     self.callInvite = nil;
     [self javascriptCallback:@"oncallinvitecanceled"];
-
 }
 
 - (void)notificationError:(NSError *)error {
