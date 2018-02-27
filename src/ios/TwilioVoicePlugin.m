@@ -40,6 +40,10 @@
 // This is a variable from plugin installation (ENABLE_CALLKIT)
 @property (nonatomic, assign) BOOL enableCallKit;
 
+// Configure whether or not to mask the incoming phone number for privacy via the plist
+// This is a variable from plugin installation (MASK_INCOMING_PHONE_NUMBER)
+@property (nonatomic, assign) BOOL maskIncomingPhoneNumber;
+
 // Call Kit member variables
 @property (nonatomic, strong) CXProvider *callKitProvider;
 @property (nonatomic, strong) CXCallController *callKitCallController;
@@ -66,6 +70,14 @@
         self.enableCallKit = YES;
     } else {
         self.enableCallKit = NO;
+    }
+
+    // read in MASK_INCOMING_PHONE_NUMBER preference
+    NSString *enableMaskIncomingPhoneNumberPreference = [[[NSBundle mainBundle] objectForInfoDictionaryKey:@"TVPMaskIncomingPhoneNumber"] uppercaseString];
+    if ([enableMaskIncomingPhoneNumberPreference isEqualToString:@"YES"] || [enableMaskIncomingPhoneNumberPreference isEqualToString:@"TRUE"]) {
+        self.maskIncomingPhoneNumber = YES;
+    } else {
+        self.maskIncomingPhoneNumber = NO;
     }
     
     if (!self.enableCallKit) {
@@ -273,22 +285,31 @@
 
 - (void)handleCallInviteReceived:(TVOCallInvite *)callInvite {
     NSLog(@"Call Invite Received: %@", callInvite.uuid);
-    self.callInvite = callInvite;
-    NSDictionary *callInviteProperties = @{
-                                           @"from":callInvite.from,
-                                           @"to":callInvite.to,
-                                           @"callSid":callInvite.callSid,
-                                           @"state":[self stringFromCallInviteState:callInvite.state]
-                                           };
-    if (self.enableCallKit) {
-        [self reportIncomingCallFrom:callInvite.from withUUID:callInvite.uuid];
-    } else {
-        [self showNotification:callInvite.from];
-        //play ringtone
-        [self.ringtonePlayer play];
-    }
+    // Two simlutaneous callInvites are not supported by Twilio and cause an error
+    // if the user attempts to answer the second call invite through CallKit.
+    // Rather than surface the second invite, just reject it which will most likely
+    // result in the second invite going to voicemail
+    if (self.callInvite == nil) {
+        self.callInvite = callInvite;
+        NSDictionary *callInviteProperties = @{
+                                               @"from":callInvite.from,
+                                               @"to":callInvite.to,
+                                               @"callSid":callInvite.callSid,
+                                               @"state":[self stringFromCallInviteState:callInvite.state]
+                                               };
+        if (self.enableCallKit) {
+            [self reportIncomingCallFrom:(self.maskIncomingPhoneNumber ? @"Unknown" : callInvite.from) withUUID:callInvite.uuid];
+        } else {
+            [self showNotification:(self.maskIncomingPhoneNumber ? @"Unknown" : callInvite.from)];
+            //play ringtone
+            [self.ringtonePlayer play];
+        }
 
-    [self javascriptCallback:@"oncallinvitereceived" withArguments:callInviteProperties];
+        [self javascriptCallback:@"oncallinvitereceived" withArguments:callInviteProperties];
+    } else {
+        [callInvite reject];
+        NSLog(@"Call Invite Received During Call. Rejecting: %@", callInvite.uuid);
+    }
 }
 
 - (void)handleCallInviteCanceled:(TVOCallInvite *)callInvite {

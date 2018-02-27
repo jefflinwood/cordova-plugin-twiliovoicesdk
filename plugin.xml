@@ -26,6 +26,9 @@
     <!-- Necessary to enable CallKit on iOS -->
     <preference name="ENABLE_CALL_KIT" default="false"/>
 
+    <!-- Option to mask the incoming phone number for privacy -->
+    <preference name="MASK_INCOMING_PHONE_NUMBER" default="false"/>
+
      <!-- android -->
     <platform name="android">
         <config-file target="AndroidManifest.xml" parent="/manifest">
@@ -140,6 +143,11 @@
         <!-- Add Enable CallKit Preference to plist -->
         <config-file target="*-Info.plist" parent="TVPEnableCallKit">
           <string>$ENABLE_CALL_KIT</string>
+        </config-file>
+        
+        <!-- Add Enable CallKit Preference to plist -->
+        <config-file target="*-Info.plist" parent="TVPMaskIncomingPhoneNumber">
+          <string>$MASK_INCOMING_PHONE_NUMBER</string>
         </config-file>
 
         <!-- Add push entitlements -->
