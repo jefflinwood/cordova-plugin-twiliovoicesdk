@@ -285,11 +285,11 @@
 
 - (void)handleCallInviteReceived:(TVOCallInvite *)callInvite {
     NSLog(@"Call Invite Received: %@", callInvite.uuid);
-    // Two simlutaneous callInvites are not supported by Twilio and cause an error
+    // Two simlutaneous callInvites or calls are not supported by Twilio and cause an error
     // if the user attempts to answer the second call invite through CallKit.
     // Rather than surface the second invite, just reject it which will most likely
     // result in the second invite going to voicemail
-    if (self.callInvite == nil) {
+    if (self.callInvite == nil && self.call == nil) {
         self.callInvite = callInvite;
         NSDictionary *callInviteProperties = @{
                                                @"from":callInvite.from,
