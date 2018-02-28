@@ -557,6 +557,7 @@
     if (self.callInvite && self.callInvite.state == TVOCallInviteStatePending) {
         [self.callInvite reject];
         self.callInvite = nil;
+        [self javascriptCallback:@"oncallinvitecanceled"];
     } else if (self.call) {
         [self.call disconnect];
     }
