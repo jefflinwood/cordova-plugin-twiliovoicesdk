@@ -377,7 +377,6 @@
         NSLog(@"Call disconnected");
     }
     
-    [self performEndCallActionWithUUID:call.uuid];
     [self callDisconnected:call];
 }
 
