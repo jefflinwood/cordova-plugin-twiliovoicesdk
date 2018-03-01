@@ -532,7 +532,6 @@
     NSLog(@"provider:performStartCallAction:");
 
     [TwilioVoice configureAudioSession];
-    [self toggleAudioRoute:YES];
     TwilioVoice.audioEnabled = NO;
     
     [self.callKitProvider reportOutgoingCallWithUUID:action.callUUID startedConnectingAtDate:[NSDate date]];
@@ -640,7 +639,6 @@
             
             // RCP: Workaround per https://forums.developer.apple.com/message/169511
             [TwilioVoice configureAudioSession];
-            [self toggleAudioRoute:YES];
         }
         else {
             NSLog(@"Failed to report incoming call successfully: %@.", [error localizedDescription]);
