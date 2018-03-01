@@ -146,6 +146,9 @@
 
 - (void) call:(CDVInvokedUrlCommand*)command {
     if ([command.arguments count] > 0) {
+        [TwilioVoice configureAudioSession];
+        TwilioVoice.audioEnabled = YES;
+
         self.accessToken = command.arguments[0];
         if ([command.arguments count] > 1) {
             NSDictionary *params = command.arguments[1];
@@ -158,7 +161,6 @@
             self.call = [TwilioVoice call:self.accessToken
                                                     params:@{}
                                                   delegate:self];
-
         }
     }
 }
@@ -376,7 +378,7 @@
     } else {
         NSLog(@"Call disconnected");
     }
-    
+
     [self callDisconnected:call];
 }
 
