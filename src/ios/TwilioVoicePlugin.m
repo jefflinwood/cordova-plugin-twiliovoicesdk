@@ -36,6 +36,9 @@
 // Access Token from Twilio
 @property (nonatomic, strong) NSString *accessToken;
 
+// Outgoing call params
+@property (nonatomic, strong) NSDictionary *outgoingCallParams;
+
 // Configure whether or not to use CallKit via the plist
 // This is a variable from plugin installation (ENABLE_CALLKIT)
 @property (nonatomic, assign) BOOL enableCallKit;
@@ -146,22 +149,13 @@
 
 - (void) call:(CDVInvokedUrlCommand*)command {
     if ([command.arguments count] > 0) {
-        [TwilioVoice configureAudioSession];
-        TwilioVoice.audioEnabled = YES;
-
         self.accessToken = command.arguments[0];
         if ([command.arguments count] > 1) {
-            NSDictionary *params = command.arguments[1];
-            NSLog(@"Making call to with params %@", params);
-            self.call = [TwilioVoice call:self.accessToken
-                                                params:params
-                                              delegate:self];
-        } else {
-            NSLog(@"Making call with no params");
-            self.call = [TwilioVoice call:self.accessToken
-                                                    params:@{}
-                                                  delegate:self];
+            self.outgoingCallParams = command.arguments[1];
         }
+        NSUUID *uuid = [NSUUID UUID];
+        NSString *incomingCallAppName = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"TVPIncomingCallAppName"];
+        [self performStartCallActionWithUUID:uuid handle:incomingCallAppName];
     }
 }
 
@@ -200,20 +194,29 @@
     }
 }
 
+#pragma mark - AVAudioSession
+- (void)toggleAudioRoute:(BOOL)toSpeaker {
+    // The mode set by the Voice SDK is "VoiceChat" so the default audio route is the built-in receiver. Use port override to switch the route.
+    NSError *error = nil;
+    if (toSpeaker) {
+        if (![[AVAudioSession sharedInstance] overrideOutputAudioPort:AVAudioSessionPortOverrideSpeaker error:&error]) {
+            NSLog(@"Unable to reroute audio: %@", [error localizedDescription]);
+        }
+    } else {
+        if (![[AVAudioSession sharedInstance] overrideOutputAudioPort:AVAudioSessionPortOverrideNone error:&error]) {
+            NSLog(@"Unable to reroute audio: %@", [error localizedDescription]);
+        }
+    }
+}
+
 -(void)setSpeaker:(CDVInvokedUrlCommand*)command {
     NSString *mode = [command.arguments objectAtIndex:0];
-    NSError *error;
     if([mode isEqual: @"on"]) {
-        [[AVAudioSession sharedInstance] overrideOutputAudioPort:AVAudioSessionPortOverrideSpeaker error:&error];
+        [self toggleAudioRoute:YES];
     }
     else {
-        [[AVAudioSession sharedInstance] overrideOutputAudioPort:AVAudioSessionPortOverrideNone error:&error];
+        [self toggleAudioRoute:NO];
     }
-    if(error)
-    {
-        NSLog(@"Error: AudioSession not configurable to use speaker");
-    }
-
 }
 
 - (void) muteCall: (CDVInvokedUrlCommand*)command {
@@ -344,6 +347,9 @@
             //pause ringtone
             [self.ringtonePlayer pause];
         }
+    } else {
+        self.callKitCompletionCallback(YES);
+        self.callKitCompletionCallback = nil;
     }
     
     NSMutableDictionary *callProperties = [NSMutableDictionary new];
@@ -517,6 +523,7 @@
     NSLog(@"provider:performStartCallAction:");
 
     [TwilioVoice configureAudioSession];
+    [self toggleAudioRoute:YES];
     TwilioVoice.audioEnabled = NO;
     
     [self.callKitProvider reportOutgoingCallWithUUID:action.callUUID startedConnectingAtDate:[NSDate date]];
@@ -624,6 +631,7 @@
             
             // RCP: Workaround per https://forums.developer.apple.com/message/169511
             [TwilioVoice configureAudioSession];
+            [self toggleAudioRoute:YES];
         }
         else {
             NSLog(@"Failed to report incoming call successfully: %@.", [error localizedDescription]);
@@ -654,9 +662,10 @@
                       completion:(void(^)(BOOL success))completionHandler {
     
     self.call = [TwilioVoice call:self.accessToken
-                           params:@{}
+                           params:(self.outgoingCallParams != nil ? self.outgoingCallParams : @{})
                              uuid:uuid
                          delegate:self];
+    self.outgoingCallParams = nil;
     self.callKitCompletionCallback = completionHandler;
 }
 
