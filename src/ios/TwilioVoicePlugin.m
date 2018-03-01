@@ -153,9 +153,18 @@
         if ([command.arguments count] > 1) {
             self.outgoingCallParams = command.arguments[1];
         }
-        NSUUID *uuid = [NSUUID UUID];
-        NSString *incomingCallAppName = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"TVPIncomingCallAppName"];
-        [self performStartCallActionWithUUID:uuid handle:incomingCallAppName];
+
+        if (self.enableCallKit) {
+            NSUUID *uuid = [NSUUID UUID];
+            NSString *incomingCallAppName = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"TVPIncomingCallAppName"];
+            [self performStartCallActionWithUUID:uuid handle:incomingCallAppName];
+        } else {
+            NSLog(@"Making call to with params %@", params);
+            self.call = [TwilioVoice call:self.accessToken
+                                     params:(self.outgoingCallParams != nil ? self.outgoingCallParams : @{})
+                                     delegate:self];
+            self.outgoingCallParams = nil;
+        }
     }
 }
 
