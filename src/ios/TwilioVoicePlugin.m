@@ -366,7 +366,9 @@
 
 - (void)call:(TVOCall *)call didFailToConnectWithError:(NSError *)error {
     NSLog(@"Call Did Fail with Error: %@, %@", [call description], [error localizedDescription]);
-    self.call = nil;
+    if (self.enableCallKit) {
+        self.callKitCompletionCallback(NO);
+    }
     [self callDisconnected:call];
     [self javascriptErrorback:error];
 }
@@ -391,6 +393,7 @@
     }
     
     self.call = nil;
+    self.callKitCompletionCallback = nil;
     [self javascriptCallback:@"oncalldiddisconnect"];
 }
 
