@@ -159,7 +159,7 @@
             NSString *incomingCallAppName = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"TVPIncomingCallAppName"];
             [self performStartCallActionWithUUID:uuid handle:incomingCallAppName];
         } else {
-            NSLog(@"Making call to with params %@", params);
+            NSLog(@"Making call to with params %@", self.outgoingCallParams);
             self.call = [TwilioVoice call:self.accessToken
                                      params:(self.outgoingCallParams != nil ? self.outgoingCallParams : @{})
                                      delegate:self];
