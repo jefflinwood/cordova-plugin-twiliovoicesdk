@@ -26,6 +26,9 @@
     <!-- Necessary to enable CallKit on iOS -->
     <preference name="ENABLE_CALL_KIT" default="false"/>
 
+    <!-- Option to mask the incoming phone number for privacy -->
+    <preference name="MASK_INCOMING_PHONE_NUMBER" default="false"/>
+
      <!-- android -->
     <platform name="android">
         <config-file target="AndroidManifest.xml" parent="/manifest">
@@ -141,6 +144,11 @@
         <config-file target="*-Info.plist" parent="TVPEnableCallKit">
           <string>$ENABLE_CALL_KIT</string>
         </config-file>
+        
+        <!-- Add Enable CallKit Preference to plist -->
+        <config-file target="*-Info.plist" parent="TVPMaskIncomingPhoneNumber">
+          <string>$MASK_INCOMING_PHONE_NUMBER</string>
+        </config-file>
 
         <!-- Add push entitlements -->
         <config-file target="*/Entitlements-Debug.plist" parent="aps-environment">
@@ -157,7 +165,7 @@
         <resource-file src="sounds/ringing.wav" />
         <resource-file src="sounds/traditionalring.mp3" />
         <info>
-You need to download __Twilio Voice SDK for iOS__ from https://media.twiliocdn.com/sdk/ios/voice/latest/twilio-voice-ios.tar.bz2. Uncompress the download - you will need to follow two steps that plugman can not do yet:
+You need to download __Twilio Voice SDK for iOS__ from https://media.twiliocdn.com/sdk/ios/voice/releases/2.0.1/twilio-voice-ios-2.0.1.tar.bz2. Uncompress the download - you will need to follow two steps that plugman can not do yet:
 
 * Add the Twilio Voice framework (TwilioVoice.framework) to your Xcode project
 * Add the Twilio Voice framework (TwilioVoice.framework) as an embedded binary to your Xcode project
