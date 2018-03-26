@@ -9,7 +9,9 @@
     <author>Jeff Linwood/Stevie Graham/Lyle Pratt</author>
     <license>MIT</license>
 
-    <asset src="www/TwilioVoicePlugin.js" target="js/TwilioVoicePlugin.js" />
+    <js-module src="www/TwilioVoicePlugin.js" name="TwilioVoicePlugin">
+        <clobbers target="Twilio.TwilioVoiceClient" />
+    </js-module>
 
     <engines>
         <engine name="cordova" version=">=6.4.0"/>
@@ -42,12 +44,12 @@
         <dependency id="phonegap-plugin-push"/>
 
         <config-file target="AndroidManifest.xml" parent="/manifest/application">
-        
+
         <receiver android:name="com.phonegap.plugins.twiliovoice.BootCompletedReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED"/>
             </intent-filter>
-        </receiver>     
+        </receiver>
 
         <service
             android:name="com.phonegap.plugins.twiliovoice.gcm.VoiceGCMListenerService"
@@ -84,7 +86,7 @@
             <string name="gcm_sender_id" translatable="false">$GCM_SENDER_ID</string>
             <string name="incoming_call_app_name" translatable="false">$INCOMING_CALL_APP_NAME</string>
         </config-file>
-        
+
         <framework src="com.google.android.gms:play-services-gcm:9.4.0" />
         <framework src="com.twilio:voice-android:2.0.0-beta4"/>
 
@@ -157,7 +159,7 @@
         <config-file target="*/Entitlements-Release.plist" parent="aps-environment">
           <string>production</string>
         </config-file>
-        
+
 
         <header-file src="src/ios/TwilioVoicePlugin.h" />
         <source-file src="src/ios/TwilioVoicePlugin.m" />
