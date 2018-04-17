@@ -85,7 +85,7 @@
             <string name="incoming_call_app_name" translatable="false">$INCOMING_CALL_APP_NAME</string>
         </config-file>
         
-        <framework src="com.google.android.gms:play-services-gcm:9.4.0" />
+        <framework src="com.google.android.gms:play-services-gcm:11.6.2" />
         <framework src="com.twilio:voice-android:2.0.0-beta4"/>
 
         <source-file src="src/android/com/phonegap/plugins/twiliovoice/TwilioVoicePlugin.java"
