@@ -128,8 +128,6 @@
         <framework src="PushKit.framework" />
         <framework src="CallKit.framework" />
                 
-        <framework src="TwilioVoice" type="podspec" spec="2.0.4" />
-
         <!-- Add support for background VOIP and audio to the plist -->
         <config-file target="*-Info.plist" parent="UIBackgroundModes">
             <array>
@@ -170,7 +168,7 @@
         <header-file src="src/ios/TwilioVoicePlugin.h" />
         <source-file src="src/ios/TwilioVoicePlugin.m" />
         
-        <framework src="TwilioVoice" type="podspec" spec="2.0.4" embed="true"/>
+        <framework src="TwilioVoice" type="podspec" spec="2.0.4" />
         <resource-file src="sounds/ringing.wav" />
         <resource-file src="sounds/traditionalring.mp3" />
         <info>
