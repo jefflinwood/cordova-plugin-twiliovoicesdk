@@ -169,7 +169,8 @@
 
         <header-file src="src/ios/TwilioVoicePlugin.h" />
         <source-file src="src/ios/TwilioVoicePlugin.m" />
-
+        
+        <framework src="TwilioVoice" type="podspec" spec="2.0.4" embed="true"/>
         <resource-file src="sounds/ringing.wav" />
         <resource-file src="sounds/traditionalring.mp3" />
         <info>
