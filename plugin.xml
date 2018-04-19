@@ -121,8 +121,14 @@
           </feature>
         </config-file>
 
-        <framework src="TwilioVoice" type="podspec" spec="~> 2.0" />
-
+        <framework src="SystemConfiguration.framework" />
+        <framework src="AudioToolbox.framework" />
+        <framework src="AVFoundation.framework" />
+        <framework src="CoreTelephony.framework" />
+        <framework src="PushKit.framework" />
+        <framework src="CallKit.framework" />
+                
+        <framework src="TwilioVoice" type="podspec" spec="2.0.4" />
 
         <!-- Add support for background VOIP and audio to the plist -->
         <config-file target="*-Info.plist" parent="UIBackgroundModes">
@@ -136,7 +142,6 @@
         <config-file target="*-Info.plist" parent="NSMicrophoneUsageDescription">
           <string>The app uses the microphone for voice calls</string>
         </config-file>
-
         
         <!-- Add Incoming Call App Name for CallKit -->
         <config-file target="*-Info.plist" parent="TVPIncomingCallAppName">
@@ -154,10 +159,10 @@
         </config-file>
 
         <!-- Add push entitlements -->
-        <config-file target="*/Entitlements-Debug.plist" parent="aps-environment">
+        <config-file target="*-Debug.plist" parent="aps-environment">
           <string>development</string>
         </config-file>
-        <config-file target="*/Entitlements-Release.plist" parent="aps-environment">
+        <config-file target="*-Release.plist" parent="aps-environment">
           <string>production</string>
         </config-file>
         
