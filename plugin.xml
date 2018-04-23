@@ -106,8 +106,8 @@
         <source-file src="src/android/com/phonegap/plugins/twiliovoice/gcm/VoiceInstanceIDListenerService.java"
                 target-dir="src/com/phonegap/plugins/twiliovoice/gcm" />
 
-        <source-file src="sounds/ringing.wav" target-dir="res/raw"/>
-        <source-file src="sounds/traditionalring.mp3" target-dir="res/raw"/>
+        <resource-file src="sounds/ringing.wav" target="res/raw/ringing.wav"/>
+        <resource-file src="sounds/traditionalring.mp3" target="res/raw/traditionalring.mp3"/>
 
     </platform>
 
