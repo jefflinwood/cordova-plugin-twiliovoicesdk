@@ -20,9 +20,6 @@
         <engine name="cordova-ios" version=">=4.4.0"/>
     </engines>
 
-    <!-- Necessary for Android Push notification support with GCM for Twilio Voice -->
-    <preference name="GCM_SENDER_ID" default=""/>
-
     <!-- Necessary to set app name for incoming call notifications on Android and CallKit on iOS -->
     <preference name="INCOMING_CALL_APP_NAME" default=""/>
 
@@ -34,47 +31,36 @@
 
      <!-- android -->
     <platform name="android">
-        <config-file target="AndroidManifest.xml" parent="/manifest">
-            <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
-            <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
-            <uses-permission android:name="android.permission.WAKE_LOCK" />
-            <uses-permission android:name="$PACKAGE_NAME.permission.C2D_MESSAGE" />
-            <permission android:name="$PACKAGE_NAME.permission.C2D_MESSAGE" android:protectionLevel="signature"/>
+
+        <config-file target="res/xml/config.xml" parent="/*">
+            <feature name="TwilioVoicePlugin">
+                <param name="android-package" value="com.phonegap.plugins.twiliovoice.TwilioVoicePlugin"/>
+            </feature>
         </config-file>
 
         <dependency id="phonegap-plugin-push"/>
 
         <config-file target="AndroidManifest.xml" parent="/manifest/application">
-        
-        <receiver android:name="com.phonegap.plugins.twiliovoice.BootCompletedReceiver">
-            <intent-filter>
-                <action android:name="android.intent.action.BOOT_COMPLETED"/>
-            </intent-filter>
-        </receiver>     
+            <!-- [START fcm_listener] -->
+            <service
+                android:name="com.phonegap.plugins.twiliovoice.fcm.VoiceFirebaseMessagingService">
+                <intent-filter>
+                    <action android:name="com.google.firebase.MESSAGING_EVENT" />
+                </intent-filter>
+            </service>
+            <!-- [END fcm_listener] -->
+            <!-- [START instanceId_listener] -->
+                <service
+                    android:name="com.phonegap.plugins.twiliovoice.fcm.VoiceFirebaseInstanceIDService" >
+                <intent-filter>
+                    <action android:name="com.google.firebase.INSTANCE_ID_EVENT" />
+                </intent-filter>
+            </service>
+            <!-- [END instanceId_listener] -->
 
-        <service
-            android:name="com.phonegap.plugins.twiliovoice.gcm.VoiceGCMListenerService"
-            android:exported="false">
-            <intent-filter android:priority="999">
-                <action android:name="com.google.android.c2dm.intent.RECEIVE" />
-            </intent-filter>
-        </service>
-
-        <service
-            android:name="com.phonegap.plugins.twiliovoice.gcm.VoiceInstanceIDListenerService"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="com.google.android.gms.iid.InstanceID" />
-            </intent-filter>
-        </service>
-
-        <service
-            android:name="com.phonegap.plugins.twiliovoice.gcm.GCMRegistrationService"
-            android:exported="false"></service>
-
-        <meta-data
-            android:name="com.google.android.gms.version"
-            android:value="@integer/google_play_services_version" />
+            <meta-data
+                android:name="com.google.android.gms.version"
+                android:value="@integer/google_play_services_version" />
         </config-file>
 
         <config-file target="res/xml/config.xml" parent="/widget">
@@ -84,30 +70,24 @@
         </config-file>
 
         <config-file target="res/values/strings.xml" parent="/resources">
-            <string name="gcm_sender_id" translatable="false">$GCM_SENDER_ID</string>
             <string name="incoming_call_app_name" translatable="false">$INCOMING_CALL_APP_NAME</string>
         </config-file>
         
-        <framework src="com.google.android.gms:play-services-gcm:11.6.2" />
-        <framework src="com.twilio:voice-android:2.0.0-beta4"/>
+        <framework src="com.google.gms:google-services:3.0.0" />
+        <framework src="com.google.firebase:firebase-messaging:10.2.1" />
+        <framework src="com.twilio:voice-android:2.0.7"/>
 
         <source-file src="src/android/com/phonegap/plugins/twiliovoice/TwilioVoicePlugin.java"
                 target-dir="src/com/phonegap/plugins/twiliovoice" />
         <source-file src="src/android/com/phonegap/plugins/twiliovoice/SoundPoolManager.java"
                 target-dir="src/com/phonegap/plugins/twiliovoice" />
-        <source-file src="src/android/com/phonegap/plugins/twiliovoice/BootCompletedReceiver.java"
-                target-dir="src/com/phonegap/plugins/twiliovoice" />
-        <source-file src="src/android/com/phonegap/plugins/twiliovoice/gcm/GcmReceiver.java"
-                target-dir="src/com/phonegap/plugins/twiliovoice/gcm" />
-        <source-file src="src/android/com/phonegap/plugins/twiliovoice/gcm/GCMRegistrationService.java"
-                target-dir="src/com/phonegap/plugins/twiliovoice/gcm" />
-        <source-file src="src/android/com/phonegap/plugins/twiliovoice/gcm/VoiceGCMListenerService.java"
-                target-dir="src/com/phonegap/plugins/twiliovoice/gcm" />
-        <source-file src="src/android/com/phonegap/plugins/twiliovoice/gcm/VoiceInstanceIDListenerService.java"
-                target-dir="src/com/phonegap/plugins/twiliovoice/gcm" />
+        <source-file src="src/android/com/phonegap/plugins/twiliovoice/fcm/VoiceFirebaseInstanceIDService.java"
+                target-dir="src/com/phonegap/plugins/twiliovoice/fcm" />
+        <source-file src="src/android/com/phonegap/plugins/twiliovoice/fcm/VoiceFirebaseMessagingService.java"
+                     target-dir="src/com/phonegap/plugins/twiliovoice/fcm" />
 
         <resource-file src="sounds/ringing.wav" target="res/raw/ringing.wav"/>
-        <resource-file src="sounds/traditionalring.mp3" target="res/raw/traditionalring.mp3"/>
+        <resource-file src="sounds/disconnect.wav" target="res/raw/disconnect.wav"/>
 
     </platform>
 
