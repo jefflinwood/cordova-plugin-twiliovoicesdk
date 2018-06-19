@@ -9,7 +9,7 @@ import static android.content.Context.AUDIO_SERVICE;
 
 public class SoundPoolManager {
 
-    private boolean playing = false;
+    private boolean ringing = false;
     private boolean loaded = false;
     private float actualVolume;
     private float maxVolume;
@@ -18,7 +18,6 @@ public class SoundPoolManager {
     private SoundPool soundPool;
     private int ringingSoundId;
     private int ringingStreamId;
-    private int disconnectSoundId;
     private static SoundPoolManager instance;
 
     private SoundPoolManager(Context context) {
@@ -47,8 +46,6 @@ public class SoundPoolManager {
         
 		int ringingResourceId =  context.getResources().getIdentifier("ringing", "raw", context.getPackageName());
         ringingSoundId = soundPool.load(context, ringingResourceId, 1);
-        int disconnectResourceId =  context.getResources().getIdentifier("disconnect", "raw", context.getPackageName());
-        disconnectSoundId = soundPool.load(context, disconnectResourceId, 1);
     }
 
     public static SoundPoolManager getInstance(Context context) {
@@ -59,34 +56,30 @@ public class SoundPoolManager {
     }
 
     public void playRinging() {
-        if (loaded && !playing) {
+        if (loaded && !ringing && soundPool != null) {
             ringingStreamId = soundPool.play(ringingSoundId, volume, volume, 1, -1, 1f);
-            playing = true;
+            ringing = true;
         }
     }
 
     public void stopRinging() {
-        if (playing) {
+        if (ringing && soundPool != null) {
             soundPool.stop(ringingStreamId);
-            playing = false;
-        }
-    }
-
-    public void playDisconnect() {
-        if (loaded && !playing) {
-            soundPool.play(disconnectSoundId, volume, volume, 1, 0, 1f);
-            playing = false;
+            ringing = false;
         }
     }
 
     public void release() {
         if (soundPool != null) {
             soundPool.unload(ringingSoundId);
-            soundPool.unload(disconnectSoundId);
             soundPool.release();
             soundPool = null;
         }
         instance = null;
+    }
+
+    public booleanisRinging() {
+        return ringing;
     }
 
 }
