@@ -1,6 +1,6 @@
 {
   "name": "twilio-voice-phonegap-plugin",
-  "version": "2.4.0",
+  "version": "2.5.0",
   "description": "Use the Twilio Voice SDK for iOS or Android with Cordova/PhoneGap. Successor to Twilio Client Plugin",
   "cordova": {
     "id": "cordova-plugin-twiliovoice",
@@ -20,12 +20,12 @@
   ],
   "engines":  {
     "cordovaDependencies": {
-      "<2.4.0": {
+      "<2.5.0": {
         "cordova-ios": ">=4.3.0",
         "cordova-android": ">=6.0.0",
         "cordova": ">=6.4.0"
       },
-      "2.4.0": {
+      "2.5.0": {
         "cordova-ios": ">=4.4.0",
         "cordova-android": ">=6.3.0",
         "cordova": ">=7.0.0"

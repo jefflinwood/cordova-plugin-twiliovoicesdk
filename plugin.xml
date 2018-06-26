@@ -2,7 +2,7 @@
 <plugin xmlns="http://www.phonegap.com/ns/plugins/1.0"
     xmlns:android="http://schemas.android.com/apk/res/android"
     id="cordova-plugin-twiliovoice"
-    version="2.4.0">
+    version="2.5.0">
 
     <name>TwilioVoice</name>
     <description>Use the Twilio Voice SDK for iOS or Android with Cordova/PhoneGap. Successor to Twilio Client Plugin</description>
@@ -11,8 +11,6 @@
     <js-module name="CordovaCall" src="www/TwilioVoicePlugin.js">
         <clobbers target="TwilioPlugin.TwilioVoiceClient" />   
     </js-module>
-
-<!--     <asset src="www/TwilioVoicePlugin.js" target="js/TwilioVoicePlugin.js" /> -->
 
     <engines>
         <engine name="cordova" version=">=7.0.0"/>
