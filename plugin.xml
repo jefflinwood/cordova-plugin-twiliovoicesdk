@@ -150,6 +150,7 @@
         
 <!--         <framework src="TwilioVoice" type="podspec" spec="2.0.4" /> -->
         <resource-file src="sounds/ringing.wav" />
+        <resource-file src="sounds/traditionalring.mp3" />
         <info>
 You need to download __Twilio Voice SDK for iOS__ from https://media.twiliocdn.com/sdk/ios/voice/releases/2.0.1/twilio-voice-ios-2.0.1.tar.bz2. Uncompress the download - you will need to follow two steps that plugman can not do yet:
 
