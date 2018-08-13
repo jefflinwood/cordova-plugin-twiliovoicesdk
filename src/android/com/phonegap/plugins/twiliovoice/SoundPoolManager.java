@@ -78,7 +78,7 @@ public class SoundPoolManager {
         instance = null;
     }
 
-    public booleanisRinging() {
+    public boolean isRinging() {
         return ringing;
     }
 
