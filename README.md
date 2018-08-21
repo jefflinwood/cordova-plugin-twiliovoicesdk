@@ -1,8 +1,11 @@
-# PhoneGap Plugin for Twilio Voice
+# Cordova Plugin for Twilio Voice
 PhoneGap/Cordova Plugin for Twilio Programmable Voice SDK
 
+# Changed Package Name to cordova-plugin-twiliovoice
+Note - as of August 21, 2018, this NPM package name will match the Cordova Plugin id (as version 3.0.x)
+
 ## Example Application
-Looking for a simple PhoneGap starter application to show how this is used?
+Looking for a simple Cordova/PhoneGap starter application to show how this is used?
 https://github.com/jefflinwood/twilio-voice-phonegap-example
 
 ## Twilio Voice
@@ -18,10 +21,10 @@ https://github.com/jefflinwood/twilio_client_phonegap
 ## Available on NPM
 
 ```
-cordova plugin add twilio-voice-phonegap-plugin
+cordova plugin add cordova-plugin-twiliovoice
 ```
 
-The NPM Page for this plugin: https://www.npmjs.com/package/twilio-voice-phonegap-plugin
+The NPM Page for this plugin: https://www.npmjs.com/package/cordova-plugin-twiliovoice
 
 ## Preferences
 
