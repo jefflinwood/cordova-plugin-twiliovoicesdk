@@ -1,6 +1,6 @@
 {
-  "name": "twilio-voice-phonegap-plugin",
-  "version": "2.5.1",
+  "name": "cordova-plugin-twiliovoice",
+  "version": "3.0.0",
   "description": "Use the Twilio Voice SDK for iOS or Android with Cordova/PhoneGap. Successor to Twilio Client Plugin",
   "cordova": {
     "id": "cordova-plugin-twiliovoice",
@@ -11,7 +11,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/jefflinwood/twilio-voice-phonegap-plugin.git"
+    "url": "git+https://github.com/jefflinwood/cordova-plugin-twiliovoice.git"
   },
   "keywords": [
     "ecosystem:cordova",
@@ -25,7 +25,7 @@
         "cordova-android": ">=6.0.0",
         "cordova": ">=6.4.0"
       },
-      "2.5.0": {
+      "3.0.0": {
         "cordova-ios": ">=4.4.0",
         "cordova-android": ">=6.3.0",
         "cordova": ">=7.0.0"
@@ -35,7 +35,7 @@
   "author": "Jeff Linwood",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/jefflinwood/twilio-voice-phonegap-plugin/issues"
+    "url": "https://github.com/jefflinwood/cordova-plugin-twiliovoice/issues"
   },
-  "homepage": "https://github.com/jefflinwood/twilio-voice-phonegap-plugin#readme"
+  "homepage": "https://github.com/jefflinwood/cordova-plugin-twiliovoice#readme"
 }
