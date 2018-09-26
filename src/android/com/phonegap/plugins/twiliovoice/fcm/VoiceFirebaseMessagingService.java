@@ -102,7 +102,7 @@ public class VoiceFirebaseMessagingService extends FirebaseMessagingService {
                 callInviteChannel.setLockscreenVisibility(Notification.VISIBILITY_PRIVATE);
                 notificationManager.createNotificationChannel(callInviteChannel);
 
-                notification = buildNotification(callInvite.getFrom() + " is calling", pendingIntent, extras);
+                notification = buildNotification('Call Invite from : ' + callInvite.getFrom(), pendingIntent, extras);
                 notificationManager.notify(notificationId, notification);
             } else {
                 int iconIdentifier = getResources().getIdentifier("icon", "mipmap", getPackageName());
@@ -112,7 +112,7 @@ public class VoiceFirebaseMessagingService extends FirebaseMessagingService {
                 if (contentTitle == null) {
                     contentTitle = "Incoming Call";
                 }
-                final String from = callInvite.getFrom() + " is calling";
+                final String from = 'Call Invite from : ' + callInvite.getFrom();
 
                 NotificationCompat.Builder notificationBuilder =
                         new NotificationCompat.Builder(this)
