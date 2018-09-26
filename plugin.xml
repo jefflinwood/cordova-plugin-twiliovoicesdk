@@ -36,7 +36,7 @@
             </feature>
         </config-file>
 
-        <dependency id="phonegap-plugin-push"/>
+        <dependency id="phonegap-plugin-push" url="https://github.com/openforge/phonegap-plugin-push/#develop">
 
         <config-file target="AndroidManifest.xml" parent="/manifest/application">
             <!-- [START fcm_listener] -->
