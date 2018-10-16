@@ -25,6 +25,11 @@ import com.twilio.voice.MessageListener;
 import com.twilio.voice.Voice;
 import static android.R.attr.data;
 
+import com.ignitras.loudcloud.R;
+import static android.R.attr.icon;
+import static android.R.attr.mipMap;
+import static android.R.attr.resource;
+
 import com.phonegap.plugins.twiliovoice.SoundPoolManager;
 import com.phonegap.plugins.twiliovoice.TwilioVoicePlugin;
 
@@ -116,14 +121,14 @@ public class VoiceFirebaseMessagingService extends FirebaseMessagingService {
 
                 NotificationCompat.Builder notificationBuilder =
                         new NotificationCompat.Builder(this)
-                                .setSmallIcon(iconIdentifier)
+                                .setSmallIcon(R.drawable.ic_stat_onesignal_default)
                                 .setContentTitle(contentTitle)
                                 .setContentText(from)
                                 .setAutoCancel(true)
                                 .setExtras(extras)
                                 .setContentIntent(pendingIntent)
                                 .setGroup("voice_app_notification")
-                                .setColor(Color.rgb(225, 0, 0));
+                                .setColor(Color.parseColor("#CE2E42"));
 
                 notificationManager.notify(notificationId, notificationBuilder.build());
 
