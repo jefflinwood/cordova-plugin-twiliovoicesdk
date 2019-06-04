@@ -16,6 +16,8 @@
 @import TwilioVoice;
 @import UserNotifications;
 
+static NSString *const kTwimlParamTo = @"to";
+
 @interface TwilioVoicePlugin () <PKPushRegistryDelegate, TVOCallDelegate, TVONotificationDelegate, CXProviderDelegate>
 
 // Callback for the Javascript plugin delegate, used for events
@@ -52,8 +54,9 @@
 @property (nonatomic, strong) CXCallController *callKitCallController;
 @property (nonatomic, strong) void(^callKitCompletionCallback)(BOOL);
 
-// Ringing Audio Player
+// Audio Properties
 @property (nonatomic, strong) AVAudioPlayer *ringtonePlayer;
+@property (nonatomic, strong) TVODefaultAudioDevice *audioDevice;
 
 @end
 
@@ -71,6 +74,8 @@
     NSString *enableCallKitPreference = [[[NSBundle mainBundle] objectForInfoDictionaryKey:@"TVPEnableCallKit"] uppercaseString];
     if ([enableCallKitPreference isEqualToString:@"YES"] || [enableCallKitPreference isEqualToString:@"TRUE"]) {
         self.enableCallKit = YES;
+        self.audioDevice = [TVODefaultAudioDevice audioDevice];
+        TwilioVoice.audioDevice = self.audioDevice;
     } else {
         self.enableCallKit = NO;
     }
@@ -160,9 +165,11 @@
             [self performStartCallActionWithUUID:uuid handle:incomingCallAppName];
         } else {
             NSLog(@"Making call to with params %@", self.outgoingCallParams);
-            self.call = [TwilioVoice call:self.accessToken
-                                     params:(self.outgoingCallParams != nil ? self.outgoingCallParams : @{})
-                                     delegate:self];
+            TVOConnectOptions *connectOptions = [TVOConnectOptions optionsWithAccessToken:self.accessToken
+                                                                                    block:^(TVOConnectOptionsBuilder *builder) {
+                                                                                        builder.params = @{kTwimlParamTo:self.outgoingCallParams[@"to"]};
+                                                                                    }];
+            self.call = [TwilioVoice connectWithOptions:connectOptions delegate:self];
             self.outgoingCallParams = nil;
         }
     }
@@ -175,7 +182,7 @@
 }
 
 - (void) disconnect:(CDVInvokedUrlCommand*)command {
-    if (self.callInvite && self.callInvite.state == TVOCallInviteStatePending) {
+    if (self.callInvite && self.call && self.call.state == TVOCallStateRinging) {
         [self.callInvite reject];
         self.callInvite = nil;
     } else if (self.call) {
@@ -206,16 +213,25 @@
 #pragma mark - AVAudioSession
 - (void)toggleAudioRoute:(BOOL)toSpeaker {
     // The mode set by the Voice SDK is "VoiceChat" so the default audio route is the built-in receiver. Use port override to switch the route.
-    NSError *error = nil;
-    if (toSpeaker) {
-        if (![[AVAudioSession sharedInstance] overrideOutputAudioPort:AVAudioSessionPortOverrideSpeaker error:&error]) {
-            NSLog(@"Unable to reroute audio: %@", [error localizedDescription]);
+    TVODefaultAudioDevice *audioDevice = self.audioDevice != nil ? self.audioDevice : (TVODefaultAudioDevice *)TwilioVoice.audioDevice;
+    audioDevice.block =  ^ {
+        // We will execute `kDefaultAVAudioSessionConfigurationBlock` first.
+        kTVODefaultAVAudioSessionConfigurationBlock();
+        
+        // Overwrite the audio route
+        AVAudioSession *session = [AVAudioSession sharedInstance];
+        NSError *error = nil;
+        if (toSpeaker) {
+            if (![session overrideOutputAudioPort:AVAudioSessionPortOverrideSpeaker error:&error]) {
+                NSLog(@"Unable to reroute audio: %@", [error localizedDescription]);
+            }
+        } else {
+            if (![session overrideOutputAudioPort:AVAudioSessionPortOverrideNone error:&error]) {
+                NSLog(@"Unable to reroute audio: %@", [error localizedDescription]);
+            }
         }
-    } else {
-        if (![[AVAudioSession sharedInstance] overrideOutputAudioPort:AVAudioSessionPortOverrideNone error:&error]) {
-            NSLog(@"Unable to reroute audio: %@", [error localizedDescription]);
-        }
-    }
+    };
+    audioDevice.block();
 }
 
 -(void)setSpeaker:(CDVInvokedUrlCommand*)command {
@@ -290,11 +306,27 @@
 
 #pragma mark TVONotificationDelegate
 - (void)callInviteReceived:(TVOCallInvite *)callInvite {
-    if (callInvite.state == TVOCallInviteStatePending) {
-        [self handleCallInviteReceived:callInvite];
-    } else if (callInvite.state == TVOCallInviteStateCanceled) {
-        [self handleCallInviteCanceled:callInvite];
+    [self handleCallInviteReceived:callInvite];
+}
+
+- (void)cancelledCallInviteReceived:(nonnull TVOCancelledCallInvite *)cancelledCallInvite {
+    NSLog(@"cancelledCallInviteReceived:");
+    
+    if (!self.callInvite ||
+        ![self.callInvite.callSid isEqualToString:cancelledCallInvite.callSid]) {
+        NSLog(@"No matching pending CallInvite. Ignoring the Cancelled CallInvite");
+        return;
     }
+    if (self.enableCallKit) {
+        [self performEndCallActionWithUUID:self.callInvite.uuid];
+    } else {
+        [self cancelNotification];
+        //pause ringtone
+        [self.ringtonePlayer pause];
+    }
+    
+    self.callInvite = nil;
+    [self javascriptCallback:@"oncallinvitecanceled"];
 }
 
 - (void)handleCallInviteReceived:(TVOCallInvite *)callInvite {
@@ -308,8 +340,7 @@
         NSDictionary *callInviteProperties = @{
                                                @"from":callInvite.from,
                                                @"to":callInvite.to,
-                                               @"callSid":callInvite.callSid,
-                                               @"state":[self stringFromCallInviteState:callInvite.state]
+                                               @"callSid":callInvite.callSid
                                                };
         if (self.enableCallKit) {
             [self reportIncomingCallFrom:(self.maskIncomingPhoneNumber ? @"Unknown" : callInvite.from) withUUID:callInvite.uuid];
@@ -324,19 +355,6 @@
         [callInvite reject];
         NSLog(@"Call Invite Received During Call. Rejecting: %@", callInvite.uuid);
     }
-}
-
-- (void)handleCallInviteCanceled:(TVOCallInvite *)callInvite {
-    NSLog(@"Call Invite Cancelled: %@", callInvite.uuid);
-    if (self.enableCallKit) {
-        [self performEndCallActionWithUUID:callInvite.uuid];
-    } else {
-        [self cancelNotification];
-        //pause ringtone
-        [self.ringtonePlayer pause];
-    }
-    self.callInvite = nil;
-    [self javascriptCallback:@"oncallinvitecanceled"];
 }
 
 - (void)notificationError:(NSError *)error {
@@ -414,28 +432,17 @@
 
 #pragma mark Conversion methods for the plugin
 
-- (NSString*) stringFromCallInviteState:(TVOCallInviteState)state {
-    if (state == TVOCallInviteStatePending) {
-        return @"pending";
-    } else if (state == TVOCallInviteStateAccepted) {
-        return @"accepted";
-    } else if (state == TVOCallInviteStateRejected) {
-        return @"rejected";
-    } else if (state == TVOCallInviteStateCanceled) {
-        return @"cancelled";
-    }
-    
-    return nil;
-}
-
 - (NSString*) stringFromCallState:(TVOCallState)state {
-    if (state == TVOCallStateConnected) {
+    if (state == TVOCallStateRinging) {
+        return @"ringing";
+    } else if (state == TVOCallStateConnected) {
         return @"connected";
     } else if (state == TVOCallStateConnecting) {
         return @"connecting";
     } else if (state == TVOCallStateDisconnected) {
         return @"disconnected";
     }
+    
     return nil;
 }
 
@@ -506,7 +513,7 @@
 
 - (void)providerDidReset:(CXProvider *)provider {
     NSLog(@"providerDidReset:");
-    TwilioVoice.audioEnabled = YES;
+    self.audioDevice.enabled = YES;
 }
 
 - (void)providerDidBegin:(CXProvider *)provider {
@@ -515,12 +522,11 @@
 
 - (void)provider:(CXProvider *)provider didActivateAudioSession:(AVAudioSession *)audioSession {
     NSLog(@"provider:didActivateAudioSession:");
-    TwilioVoice.audioEnabled = YES;
+    self.audioDevice.enabled = YES;
 }
 
 - (void)provider:(CXProvider *)provider didDeactivateAudioSession:(AVAudioSession *)audioSession {
     NSLog(@"provider:didDeactivateAudioSession:");
-    TwilioVoice.audioEnabled = NO;
 }
 
 - (void)provider:(CXProvider *)provider timedOutPerformingAction:(CXAction *)action {
@@ -530,9 +536,9 @@
 
 - (void)provider:(CXProvider *)provider performStartCallAction:(CXStartCallAction *)action {
     NSLog(@"provider:performStartCallAction:");
-
-    [TwilioVoice configureAudioSession];
-    TwilioVoice.audioEnabled = NO;
+    
+    self.audioDevice.enabled = NO;
+    self.audioDevice.block();
     
     [self.callKitProvider reportOutgoingCallWithUUID:action.callUUID startedConnectingAtDate:[NSDate date]];
     
@@ -551,14 +557,11 @@
 - (void)provider:(CXProvider *)provider performAnswerCallAction:(CXAnswerCallAction *)action {
     NSLog(@"provider:performAnswerCallAction:");
     
-    // RCP: Workaround from https://forums.developer.apple.com/message/169511 suggests configuring audio in the
-    //      completion block of the `reportNewIncomingCallWithUUID:update:completion:` method instead of in
-    //      `provider:performAnswerCallAction:` per the WWDC examples.
-    // [[TwilioVoice sharedInstance] configureAudioSession];
-    
     NSAssert([self.callInvite.uuid isEqual:action.callUUID], @"We only support one Invite at a time.");
     
-    TwilioVoice.audioEnabled = NO;
+    self.audioDevice.enabled = NO;
+    self.audioDevice.block();
+    
     [self performAnswerVoiceCallWithUUID:action.callUUID completion:^(BOOL success) {
         if (success) {
             [action fulfill];
@@ -573,7 +576,7 @@
 - (void)provider:(CXProvider *)provider performEndCallAction:(CXEndCallAction *)action {
     NSLog(@"provider:performEndCallAction:");
     
-    if (self.callInvite && self.callInvite.state == TVOCallInviteStatePending) {
+    if (self.callInvite) {
         [self.callInvite reject];
         self.callInvite = nil;
         [self javascriptCallback:@"oncallinvitecanceled"];
@@ -581,6 +584,7 @@
         [self.call disconnect];
     }
     
+    self.audioDevice.enabled = YES;
     [action fulfill];
 }
 
@@ -636,9 +640,6 @@
     [self.callKitProvider reportNewIncomingCallWithUUID:uuid update:callUpdate completion:^(NSError *error) {
         if (!error) {
             NSLog(@"Incoming call successfully reported.");
-            
-            // RCP: Workaround per https://forums.developer.apple.com/message/169511
-            [TwilioVoice configureAudioSession];
         }
         else {
             NSLog(@"Failed to report incoming call successfully: %@.", [error localizedDescription]);
@@ -647,10 +648,6 @@
 }
 
 - (void)performEndCallActionWithUUID:(NSUUID *)uuid {
-    if (uuid == nil) {
-        return;
-    }
-    
     CXEndCallAction *endCallAction = [[CXEndCallAction alloc] initWithCallUUID:uuid];
     CXTransaction *transaction = [[CXTransaction alloc] initWithAction:endCallAction];
     
@@ -668,20 +665,33 @@
                           client:(NSString *)client
                       completion:(void(^)(BOOL success))completionHandler {
     
-    self.call = [TwilioVoice call:self.accessToken
-                           params:(self.outgoingCallParams != nil ? self.outgoingCallParams : @{})
-                             uuid:uuid
-                         delegate:self];
-    self.outgoingCallParams = nil;
+    TwilioVoicePlugin __weak *weakSelf = self;
+    TVOConnectOptions *connectOptions = [TVOConnectOptions optionsWithAccessToken:self.accessToken block:^(TVOConnectOptionsBuilder *builder) {
+        TwilioVoicePlugin __strong *strongSelf = weakSelf;
+        builder.params = @{kTwimlParamTo: strongSelf.outgoingCallParams[@"to"]};
+        builder.uuid = uuid;
+    }];
+    self.call = [TwilioVoice connectWithOptions:connectOptions delegate:self];
     self.callKitCompletionCallback = completionHandler;
 }
 
 - (void)performAnswerVoiceCallWithUUID:(NSUUID *)uuid
                             completion:(void(^)(BOOL success))completionHandler {
+    TwilioVoicePlugin __weak *weakSelf = self;
+    TVOAcceptOptions *acceptOptions = [TVOAcceptOptions optionsWithCallInvite:self.callInvite block:^(TVOAcceptOptionsBuilder *builder) {
+        TwilioVoicePlugin __strong *strongSelf = weakSelf;
+        builder.uuid = strongSelf.callInvite.uuid;
+    }];
     
-    self.call = [self.callInvite acceptWithDelegate:self];
+    self.call = [self.callInvite acceptWithOptions:acceptOptions delegate:self];
+    
+    if (!self.call) {
+        completionHandler(NO);
+    } else {
+        self.callKitCompletionCallback = completionHandler;
+    }
+    
     self.callInvite = nil;
-    self.callKitCompletionCallback = completionHandler;
 }
 
 @end
