@@ -167,7 +167,7 @@ static NSString *const kTwimlParamTo = @"to";
             NSLog(@"Making call to with params %@", self.outgoingCallParams);
             TVOConnectOptions *connectOptions = [TVOConnectOptions optionsWithAccessToken:self.accessToken
                                                                                     block:^(TVOConnectOptionsBuilder *builder) {
-                                                                                        builder.params = @{kTwimlParamTo:self.outgoingCallParams[@"to"]};
+                                                                                        builder.params = @{kTwimlParamTo:self.outgoingCallParams[@"To"]};
                                                                                     }];
             self.call = [TwilioVoice connectWithOptions:connectOptions delegate:self];
             self.outgoingCallParams = nil;
@@ -668,7 +668,7 @@ static NSString *const kTwimlParamTo = @"to";
     TwilioVoicePlugin __weak *weakSelf = self;
     TVOConnectOptions *connectOptions = [TVOConnectOptions optionsWithAccessToken:self.accessToken block:^(TVOConnectOptionsBuilder *builder) {
         TwilioVoicePlugin __strong *strongSelf = weakSelf;
-        builder.params = @{kTwimlParamTo: strongSelf.outgoingCallParams[@"to"]};
+        builder.params = @{kTwimlParamTo: strongSelf.outgoingCallParams[@"To"]};
         builder.uuid = uuid;
     }];
     self.call = [TwilioVoice connectWithOptions:connectOptions delegate:self];
