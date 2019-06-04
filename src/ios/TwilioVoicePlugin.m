@@ -25,6 +25,7 @@ static NSString *const kTwimlParamTo = @"to";
 
 // Push registry for APNS VOIP
 @property (nonatomic, strong) PKPushRegistry *voipPushRegistry;
+@property (nonatomic, strong) void(^incomingPushCompletionCallback)(void);
 
 // Current call (can be nil)
 @property (nonatomic, strong) TVOCall *call;
@@ -158,19 +159,23 @@ static NSString *const kTwimlParamTo = @"to";
         if ([command.arguments count] > 1) {
             self.outgoingCallParams = command.arguments[1];
         }
-
-        if (self.enableCallKit) {
-            NSUUID *uuid = [NSUUID UUID];
-            NSString *incomingCallAppName = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"TVPIncomingCallAppName"];
-            [self performStartCallActionWithUUID:uuid handle:incomingCallAppName];
+        
+        if (self.call && self.call.state == TVOCallStateConnected) {
+            [self performEndCallActionWithUUID:self.call.uuid];
         } else {
-            NSLog(@"Making call to with params %@", self.outgoingCallParams);
-            TVOConnectOptions *connectOptions = [TVOConnectOptions optionsWithAccessToken:self.accessToken
-                                                                                    block:^(TVOConnectOptionsBuilder *builder) {
-                                                                                        builder.params = @{kTwimlParamTo:self.outgoingCallParams[@"To"]};
-                                                                                    }];
-            self.call = [TwilioVoice connectWithOptions:connectOptions delegate:self];
-            self.outgoingCallParams = nil;
+            if (self.enableCallKit) {
+                NSUUID *uuid = [NSUUID UUID];
+                NSString *incomingCallAppName = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"TVPIncomingCallAppName"];
+                [self performStartCallActionWithUUID:uuid handle:incomingCallAppName];
+            } else {
+                NSLog(@"Making call to with params %@", self.outgoingCallParams);
+                TVOConnectOptions *connectOptions = [TVOConnectOptions optionsWithAccessToken:self.accessToken
+                                                                                        block:^(TVOConnectOptionsBuilder *builder) {
+                                                                                            builder.params = @{kTwimlParamTo:self.outgoingCallParams[@"To"]};
+                                                                                        }];
+                self.call = [TwilioVoice connectWithOptions:connectOptions delegate:self];
+                self.outgoingCallParams = nil;
+            }
         }
     }
 }
@@ -304,6 +309,26 @@ static NSString *const kTwimlParamTo = @"to";
     }
 }
 
+- (void)pushRegistry:(PKPushRegistry *)registry didReceiveIncomingPushWithPayload:(PKPushPayload *)payload forType:(PKPushType)type withCompletionHandler:(void (^)(void))completion {
+    NSLog(@"pushRegistry:didReceiveIncomingPushWithPayload:forType:withCompletionHandler:");
+    
+    // Save for later when the notification is properly handled.
+    self.incomingPushCompletionCallback = completion;
+    
+    if ([type isEqualToString:PKPushTypeVoIP]) {
+        if (![TwilioVoice handleNotification:payload.dictionaryPayload delegate:self]) {
+            NSLog(@"This is not a valid Twilio Voice notification.");
+        }
+    }
+}
+
+- (void)incomingPushHandled {
+    if (self.incomingPushCompletionCallback) {
+        self.incomingPushCompletionCallback();
+        self.incomingPushCompletionCallback = nil;
+    }
+}
+
 #pragma mark TVONotificationDelegate
 - (void)callInviteReceived:(TVOCallInvite *)callInvite {
     [self handleCallInviteReceived:callInvite];
@@ -311,6 +336,8 @@ static NSString *const kTwimlParamTo = @"to";
 
 - (void)cancelledCallInviteReceived:(nonnull TVOCancelledCallInvite *)cancelledCallInvite {
     NSLog(@"cancelledCallInviteReceived:");
+    
+    [self incomingPushHandled];
     
     if (!self.callInvite ||
         ![self.callInvite.callSid isEqualToString:cancelledCallInvite.callSid]) {
@@ -326,6 +353,7 @@ static NSString *const kTwimlParamTo = @"to";
     }
     
     self.callInvite = nil;
+    [self incomingPushHandled];
     [self javascriptCallback:@"oncallinvitecanceled"];
 }
 
@@ -352,8 +380,8 @@ static NSString *const kTwimlParamTo = @"to";
 
         [self javascriptCallback:@"oncallinvitereceived" withArguments:callInviteProperties];
     } else {
-        [callInvite reject];
-        NSLog(@"Call Invite Received During Call. Rejecting: %@", callInvite.uuid);
+        [self incomingPushHandled];
+        NSLog(@"Call Invite Received During Call. Ignoring: %@", callInvite.uuid);
     }
 }
 
@@ -692,6 +720,7 @@ static NSString *const kTwimlParamTo = @"to";
     }
     
     self.callInvite = nil;
+    [self incomingPushHandled];
 }
 
 @end
