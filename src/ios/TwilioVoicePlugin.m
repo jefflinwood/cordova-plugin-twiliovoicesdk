@@ -16,7 +16,7 @@
 @import TwilioVoice;
 @import UserNotifications;
 
-static NSString *const kTwimlParamTo = @"to";
+static NSString *const kTwimlParamTo = @"To";
 
 @interface TwilioVoicePlugin () <PKPushRegistryDelegate, TVOCallDelegate, TVONotificationDelegate, CXProviderDelegate>
 
