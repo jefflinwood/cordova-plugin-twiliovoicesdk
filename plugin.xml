@@ -127,7 +127,7 @@
           <string>$ENABLE_CALL_KIT</string>
         </config-file>
         
-        <!-- Add Mast Incoming Phone Number Preference to plist -->
+        <!-- Add Mask Incoming Phone Number Preference to plist -->
         <config-file target="*-Info.plist" parent="TVPMaskIncomingPhoneNumber">
           <string>$MASK_INCOMING_PHONE_NUMBER</string>
         </config-file>
