@@ -67,9 +67,12 @@ static NSString *const kTwimlParamTo = @"To";
     [super pluginInitialize];
     
     NSLog(@"Initializing plugin");
-
-    // set log level for development
-    [TwilioVoice setLogLevel:TVOLogLevelOff];
+    NSString *debugTwilioPreference = [[[NSBundle mainBundle] objectForInfoDictionaryKey:@"TVPEnableDebugging"] uppercaseString];
+    if ([debugTwilioPreference isEqualToString:@"YES"] || [debugTwilioPreference isEqualToString:@"TRUE"]) {
+        [TwilioVoice setLogLevel:TVOLogLevelDebug];
+    } else {
+        [TwilioVoice setLogLevel:TVOLogLevelOff];
+    }
 
     // read in Enable CallKit preference
     NSString *enableCallKitPreference = [[[NSBundle mainBundle] objectForInfoDictionaryKey:@"TVPEnableCallKit"] uppercaseString];

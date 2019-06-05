@@ -127,9 +127,14 @@
           <string>$ENABLE_CALL_KIT</string>
         </config-file>
         
-        <!-- Add Enable CallKit Preference to plist -->
+        <!-- Add Mast Incoming Phone Number Preference to plist -->
         <config-file target="*-Info.plist" parent="TVPMaskIncomingPhoneNumber">
           <string>$MASK_INCOMING_PHONE_NUMBER</string>
+        </config-file>
+        
+        <!-- Add Debug Twilio to plist -->
+        <config-file target="*-Info.plist" parent="TVPEnableDebugging">
+          <string>$DEBUG_TWILIO</string>
         </config-file>
 
         <!-- Add push entitlements -->
