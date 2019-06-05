@@ -715,8 +715,14 @@ static NSString *const kTwimlParamTo = @"To";
     }];
     
     self.call = [self.callInvite acceptWithOptions:acceptOptions delegate:self];
+    
+    if (!self.call) {
+        completionHandler(NO);
+    } else {
+        self.callKitCompletionCallback = completionHandler;
+    }
+    
     self.callInvite = nil;
-    self.callKitCompletionCallback = completionHandler;
     [self incomingPushHandled];
 }
 
