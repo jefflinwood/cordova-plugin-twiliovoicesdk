@@ -18,6 +18,10 @@ https://github.com/twilio/voice-quickstart-android/
 If you are using the Twilio Client SDK for iOS and Android, see the earlier Twilio Client Plugin
 https://github.com/jefflinwood/twilio_client_phonegap
 
+## Note - the To parameter for dialing out
+
+The most recent pull request merged in to the plug-in only supports the use of `To` as a parameter to be used for dialing out - if your application uses `tocall` or similar, you will need to adjust this plugin's constant, for now).
+
 ## Available on NPM
 
 ```
