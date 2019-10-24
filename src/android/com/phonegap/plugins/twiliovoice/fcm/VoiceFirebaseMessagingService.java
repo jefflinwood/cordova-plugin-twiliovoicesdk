@@ -20,7 +20,6 @@ import android.util.Log;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 import com.twilio.voice.CallInvite;
-import com.twilio.voice.MessageException;
 import com.twilio.voice.MessageListener;
 import com.twilio.voice.Voice;
 import static android.R.attr.data;
@@ -60,18 +59,6 @@ public class VoiceFirebaseMessagingService extends FirebaseMessagingService {
         if (remoteMessage.getData().size() > 0) {
             Map<String, String> data = remoteMessage.getData();
             final int notificationId = (int) (System.currentTimeMillis() % Integer.MAX_VALUE);
-            Voice.handleMessage(this, data, new MessageListener() {
-                @Override
-                public void onCallInvite(CallInvite callInvite) {
-                    VoiceFirebaseMessagingService.this.notify(callInvite, notificationId);
-                    VoiceFirebaseMessagingService.this.sendCallInviteToPlugin(callInvite, notificationId);
-                }
-
-                @Override
-                public void onError(MessageException messageException) {
-                    Log.e(TAG, messageException.getLocalizedMessage());
-                }
-            });
         }
     }
 
@@ -79,23 +66,19 @@ public class VoiceFirebaseMessagingService extends FirebaseMessagingService {
         String callSid = callInvite.getCallSid();
         Notification notification = null;
 
-        if (callInvite.getState() == CallInvite.State.PENDING) {
-            Intent intent = getPackageManager().getLaunchIntentForPackage(getPackageName());
-            intent.setAction(TwilioVoicePlugin.ACTION_INCOMING_CALL);
-            intent.putExtra(TwilioVoicePlugin.INCOMING_CALL_NOTIFICATION_ID, notificationId);
-            intent.putExtra(TwilioVoicePlugin.INCOMING_CALL_INVITE, callInvite);
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-            PendingIntent pendingIntent =
-                    PendingIntent.getActivity(this, notificationId, intent, PendingIntent.FLAG_CANCEL_CURRENT);
-            /*
-             * Pass the notification id and call sid to use as an identifier to cancel the
-             * notification later
-             */
-            Bundle extras = new Bundle();
-            extras.putInt(NOTIFICATION_ID_KEY, notificationId);
-            extras.putString(CALL_SID_KEY, callSid);
+        Intent intent = getPackageManager().getLaunchIntentForPackage(getPackageName());
+        intent.setAction(TwilioVoicePlugin.ACTION_INCOMING_CALL);
+        intent.putExtra(TwilioVoicePlugin.INCOMING_CALL_NOTIFICATION_ID, notificationId);
+        intent.putExtra(TwilioVoicePlugin.INCOMING_CALL_INVITE, callInvite);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        PendingIntent pendingIntent =
+                PendingIntent.getActivity(this, notificationId, intent, PendingIntent.FLAG_CANCEL_CURRENT);
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        Bundle extras = new Bundle();
+        extras.putInt(NOTIFICATION_ID_KEY, notificationId);
+        extras.putString(CALL_SID_KEY, callSid);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 NotificationChannel callInviteChannel = new NotificationChannel(VOICE_CHANNEL,
                         "Primary Voice Channel", NotificationManager.IMPORTANCE_DEFAULT);
                 callInviteChannel.setLightColor(Color.RED);
@@ -108,7 +91,7 @@ public class VoiceFirebaseMessagingService extends FirebaseMessagingService {
                 int iconIdentifier = getResources().getIdentifier("icon", "mipmap", getPackageName());
                 int incomingCallAppNameId = (int) getResources().getIdentifier("incoming_call_app_name", "string", getPackageName());
                 String contentTitle = getString(incomingCallAppNameId);
-                
+
                 if (contentTitle == null) {
                     contentTitle = "Incoming Call";
                 }
@@ -128,39 +111,6 @@ public class VoiceFirebaseMessagingService extends FirebaseMessagingService {
                 notificationManager.notify(notificationId, notificationBuilder.build());
 
             }
-        } else {
-            SoundPoolManager.getInstance(this).stopRinging();
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
-                /*
-                 * If the incoming call was cancelled then remove the notification by matching
-                 * it with the call sid from the list of notifications in the notification drawer.
-                 */
-                StatusBarNotification[] activeNotifications = notificationManager.getActiveNotifications();
-                for (StatusBarNotification statusBarNotification : activeNotifications) {
-                    notification = statusBarNotification.getNotification();
-                    Bundle extras = notification.extras;
-                    String notificationCallSid = extras.getString(CALL_SID_KEY);
-
-                    if (callSid.equals(notificationCallSid)) {
-                        notificationManager.cancel(extras.getInt(NOTIFICATION_ID_KEY));
-                    } else {
-                        sendCallInviteToPlugin(callInvite, notificationId);
-                    }
-                }
-            } else {
-                /*
-                 * Prior to Android M the notification manager did not provide a list of
-                 * active notifications so we lazily clear all the notifications when
-                 * receiving a cancelled call.
-                 *
-                 * In order to properly cancel a notification using
-                 * NotificationManager.cancel(notificationId) we should store the call sid &
-                 * notification id of any incoming calls using shared preferences or some other form
-                 * of persistent storage.
-                 */
-                notificationManager.cancelAll();
-            }
-        }
     }
 
     /**
