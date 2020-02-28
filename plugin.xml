@@ -9,7 +9,7 @@
     <author>Jeff Linwood/Stevie Graham/Lyle Pratt</author>
     <license>MIT</license>
     <js-module name="CordovaCall" src="www/TwilioVoicePlugin.js">
-        <clobbers target="TwilioPlugin.TwilioVoiceClient" />   
+        <clobbers target="TwilioPlugin.TwilioVoiceClient" />
     </js-module>
 
     <engines>
@@ -70,10 +70,10 @@
         <config-file target="res/values/strings.xml" parent="/resources">
             <string name="incoming_call_app_name" translatable="false">$INCOMING_CALL_APP_NAME</string>
         </config-file>
-        
+
         <framework src="com.google.gms:google-services:3.0.0" />
         <framework src="com.google.firebase:firebase-messaging:10.2.1" />
-        <framework src="com.twilio:voice-android:2.0.7"/>
+        <framework src="com.twilio:voice-android:3.0.0"/>
 
         <source-file src="src/android/com/phonegap/plugins/twiliovoice/TwilioVoicePlugin.java"
                 target-dir="src/com/phonegap/plugins/twiliovoice" />
@@ -103,7 +103,7 @@
         <framework src="CoreTelephony.framework" />
         <framework src="PushKit.framework" />
         <framework src="CallKit.framework" />
-                
+
         <!-- Add support for background VOIP and audio to the plist -->
         <config-file target="*-Info.plist" parent="UIBackgroundModes">
             <array>
@@ -116,22 +116,22 @@
         <config-file target="*-Info.plist" parent="NSMicrophoneUsageDescription">
           <string>The app uses the microphone for voice calls</string>
         </config-file>
-        
+
         <!-- Add Incoming Call App Name for CallKit -->
         <config-file target="*-Info.plist" parent="TVPIncomingCallAppName">
           <string>$INCOMING_CALL_APP_NAME</string>
         </config-file>
-        
+
         <!-- Add Enable CallKit Preference to plist -->
         <config-file target="*-Info.plist" parent="TVPEnableCallKit">
           <string>$ENABLE_CALL_KIT</string>
         </config-file>
-        
+
         <!-- Add Mask Incoming Phone Number Preference to plist -->
         <config-file target="*-Info.plist" parent="TVPMaskIncomingPhoneNumber">
           <string>$MASK_INCOMING_PHONE_NUMBER</string>
         </config-file>
-        
+
         <!-- Add Debug Twilio to plist -->
         <config-file target="*-Info.plist" parent="TVPEnableDebugging">
           <string>$DEBUG_TWILIO</string>
@@ -144,11 +144,11 @@
         <config-file target="*-Release.plist" parent="aps-environment">
           <string>production</string>
         </config-file>
-        
+
 
         <header-file src="src/ios/TwilioVoicePlugin.h" />
         <source-file src="src/ios/TwilioVoicePlugin.m" />
-        
+
 <!--         <framework src="TwilioVoice" type="podspec" spec="2.0.4" /> -->
         <resource-file src="sounds/ringing.wav" />
         <resource-file src="sounds/traditionalring.mp3" />
