@@ -78,10 +78,13 @@ static NSString *const kTwimlParamTo = @"To";
     NSString *enableCallKitPreference = [[[NSBundle mainBundle] objectForInfoDictionaryKey:@"TVPEnableCallKit"] uppercaseString];
     if ([enableCallKitPreference isEqualToString:@"YES"] || [enableCallKitPreference isEqualToString:@"TRUE"]) {
         self.enableCallKit = YES;
+    } else {
+        self.enableCallKit = YES;
+    }
+        
+    if (self.enableCallKit) {
         self.audioDevice = [TVODefaultAudioDevice audioDevice];
         TwilioVoice.audioDevice = self.audioDevice;
-    } else {
-        self.enableCallKit = NO;
     }
 
     // read in MASK_INCOMING_PHONE_NUMBER preference
@@ -368,7 +371,7 @@ static NSString *const kTwimlParamTo = @"To";
 
 - (void)handleCallInviteReceived:(TVOCallInvite *)callInvite {
     NSLog(@"Call Invite Received: %@", callInvite.uuid);
-    // Two simlutaneous callInvites or calls are not supported by Twilio and cause an error
+    // Two simultaneous callInvites or calls are not supported by Twilio and cause an error
     // if the user attempts to answer the second call invite through CallKit.
     // Rather than surface the second invite, just reject it which will most likely
     // result in the second invite going to voicemail
@@ -400,6 +403,20 @@ static NSString *const kTwimlParamTo = @"To";
 }
 
 #pragma mark TVOCallDelegate
+
+- (void)callDidStartRinging:(TVOCall *)call {
+    NSLog(@"Call Did Start Ringing");
+}
+
+
+- (void)call:(TVOCall *)call isReconnectingWithError:(NSError *)error {
+    NSLog(@"Call is Reconnecting with Error: %@", [error localizedDescription]);
+}
+
+- (void)callDidReconnect:(TVOCall *)call {
+    NSLog(@"Call Did Reconnect: %@", [call description]);
+    
+}
 
 - (void)callDidConnect:(TVOCall *)call {
     NSLog(@"Call Did Connect: %@", [call description]);
@@ -435,7 +452,7 @@ static NSString *const kTwimlParamTo = @"To";
 }
 
 - (void)call:(TVOCall *)call didFailToConnectWithError:(NSError *)error {
-    NSLog(@"Call Did Fail with Error: %@, %@", [call description], [error localizedDescription]);
+    NSLog(@"Call Did Fail to Connect with Error: %@", [error localizedDescription]);
     if (self.enableCallKit) {
         self.callKitCompletionCallback(NO);
     }
