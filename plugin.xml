@@ -2,7 +2,7 @@
 <plugin xmlns="http://www.phonegap.com/ns/plugins/1.0"
     xmlns:android="http://schemas.android.com/apk/res/android"
     id="cordova-plugin-twiliovoicesdk"
-    version="3.0.0">
+    version="5.5.0">
 
     <name>TwilioVoice</name>
     <description>Use the Twilio Voice SDK for iOS or Android with Cordova/PhoneGap. Successor to Twilio Client Plugin</description>
@@ -13,9 +13,9 @@
     </js-module>
 
     <engines>
-        <engine name="cordova" version=">=7.0.0"/>
-        <engine name="cordova-android" version=">=6.3.0"/>
-        <engine name="cordova-ios" version=">=4.4.0"/>
+        <engine name="cordova" version=">=10.0.0"/>
+        <engine name="cordova-android" version=">=9.0.0"/>
+        <engine name="cordova-ios" version=">=6.1.0"/>
     </engines>
 
     <!-- Necessary to set app name for incoming call notifications on Android and CallKit on iOS -->
@@ -149,15 +149,18 @@
         <header-file src="src/ios/TwilioVoicePlugin.h" />
         <source-file src="src/ios/TwilioVoicePlugin.m" />
 
-<!--         <framework src="TwilioVoice" type="podspec" spec="2.0.4" /> -->
         <resource-file src="sounds/ringing.wav" />
         <resource-file src="sounds/traditionalring.mp3" />
         <info>
-You need to download __Twilio Voice SDK for iOS__ from https://media.twiliocdn.com/sdk/ios/voice/releases/3.1.0/twilio-voice-ios-3.1.0.tar.bz2. Uncompress the download - you will need to follow two steps that plugman can not do yet:
-
-* Add the Twilio Voice framework (TwilioVoice.framework) to your Xcode project
-* Add the Twilio Voice framework (TwilioVoice.framework) as an embedded binary to your Xcode project
 
         </info>
+        <podspec>
+          <config>
+            <source url="https://github.com/CocoaPods/Specs.git"/>
+          </config>
+          <pods use-frameworks="true">
+            <pod name="TwilioVoice" spec="~> 5.5.1" />
+          </pods>
+        </podspec>
     </platform>
 </plugin>

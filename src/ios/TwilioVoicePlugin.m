@@ -34,7 +34,7 @@ static NSString *const kTwimlParamTo = @"To";
 @property (nonatomic, strong) TVOCallInvite *callInvite;
 
 // Device Token from Apple Push Notification Service for VOIP
-@property (nonatomic, strong) NSString *pushDeviceToken;
+@property (nonatomic, strong) NSData *pushDeviceTokenData;
 
 // Access Token from Twilio
 @property (nonatomic, strong) NSString *accessToken;
@@ -78,10 +78,13 @@ static NSString *const kTwimlParamTo = @"To";
     NSString *enableCallKitPreference = [[[NSBundle mainBundle] objectForInfoDictionaryKey:@"TVPEnableCallKit"] uppercaseString];
     if ([enableCallKitPreference isEqualToString:@"YES"] || [enableCallKitPreference isEqualToString:@"TRUE"]) {
         self.enableCallKit = YES;
+    } else {
+        self.enableCallKit = YES;
+    }
+        
+    if (self.enableCallKit) {
         self.audioDevice = [TVODefaultAudioDevice audioDevice];
         TwilioVoice.audioDevice = self.audioDevice;
-    } else {
-        self.enableCallKit = NO;
     }
 
     // read in MASK_INCOMING_PHONE_NUMBER preference
@@ -158,12 +161,14 @@ static NSString *const kTwimlParamTo = @"To";
 
 - (void) call:(CDVInvokedUrlCommand*)command {
     if ([command.arguments count] > 0) {
-        self.accessToken = command.arguments[0];
+        if (command.arguments[0] != [NSNull null]) {
+            self.accessToken = command.arguments[0];
+        }
         if ([command.arguments count] > 1) {
             self.outgoingCallParams = command.arguments[1];
         }
         
-        if (self.call && self.call.state == TVOCallStateConnected) {
+        if (self.call && (self.call.state == TVOCallStateConnected || self.call.state == TVOCallStateReconnecting)) {
             [self performEndCallActionWithUUID:self.call.uuid];
         } else {
             if (self.enableCallKit) {
@@ -277,10 +282,12 @@ static NSString *const kTwimlParamTo = @"To";
 #pragma mark PKPushRegistryDelegate methods
 - (void)pushRegistry:(PKPushRegistry *)registry didUpdatePushCredentials:(PKPushCredentials *)credentials forType:(PKPushType)type {
     if ([type isEqualToString:PKPushTypeVoIP]) {
-        self.pushDeviceToken = [credentials.token description];
-        NSLog(@"Updating push device token for VOIP: %@",self.pushDeviceToken);
+        self.pushDeviceTokenData = credentials.token;
+        NSLog(@"Updating push device token for VOIP");
+        
         [TwilioVoice registerWithAccessToken:self.accessToken
-                                                  deviceToken:self.pushDeviceToken completion:^(NSError * _Nullable error) {
+                             deviceTokenData:credentials.token
+                                  completion:^(NSError * _Nullable error) {
             if (error) {
                 NSLog(@"Error registering Voice Client for VOIP Push: %@", [error localizedDescription]);
             } else {
@@ -292,15 +299,16 @@ static NSString *const kTwimlParamTo = @"To";
 
 - (void)pushRegistry:(PKPushRegistry *)registry didInvalidatePushTokenForType:(PKPushType)type {
     if ([type isEqualToString:PKPushTypeVoIP]) {
-        NSLog(@"Invalidating push device token for VOIP: %@",self.pushDeviceToken);
+        NSLog(@"Invalidating push device token data for VOIP: %@",self.pushDeviceTokenData);
         [TwilioVoice unregisterWithAccessToken:self.accessToken
-                                                    deviceToken:self.pushDeviceToken completion:^(NSError * _Nullable error) {
+                               deviceTokenData:self.pushDeviceTokenData
+                                    completion:^(NSError * _Nullable error) {
             if (error) {
-                NSLog(@"Error unregistering Voice Client for VOIP Push: %@", [error localizedDescription]);
-            } else {
-                NSLog(@"Unegistered Voice Client for VOIP Push");
-            }
-            self.pushDeviceToken = nil;
+                          NSLog(@"Error unregistering Voice Client for VOIP Push: %@", [error localizedDescription]);
+                      } else {
+                          NSLog(@"Unegistered Voice Client for VOIP Push");
+                      }
+                      self.pushDeviceTokenData = nil;
         }];
     }
 }
@@ -308,7 +316,9 @@ static NSString *const kTwimlParamTo = @"To";
 - (void)pushRegistry:(PKPushRegistry *)registry didReceiveIncomingPushWithPayload:(PKPushPayload *)payload forType:(PKPushType)type {
     if ([type isEqualToString:PKPushTypeVoIP]) {
         NSLog(@"Received Incoming Push Payload for VOIP: %@",payload.dictionaryPayload);
-        [TwilioVoice handleNotification:payload.dictionaryPayload delegate:self];
+        [TwilioVoice handleNotification:payload.dictionaryPayload
+                               delegate:self
+                          delegateQueue:nil];
     }
 }
 
@@ -319,7 +329,7 @@ static NSString *const kTwimlParamTo = @"To";
     self.incomingPushCompletionCallback = completion;
     
     if ([type isEqualToString:PKPushTypeVoIP]) {
-        if (![TwilioVoice handleNotification:payload.dictionaryPayload delegate:self]) {
+        if (![TwilioVoice handleNotification:payload.dictionaryPayload delegate:self delegateQueue:nil]) {
             NSLog(@"This is not a valid Twilio Voice notification.");
         }
     }
@@ -337,7 +347,8 @@ static NSString *const kTwimlParamTo = @"To";
     [self handleCallInviteReceived:callInvite];
 }
 
-- (void)cancelledCallInviteReceived:(nonnull TVOCancelledCallInvite *)cancelledCallInvite {
+- (void)cancelledCallInviteReceived:(nonnull TVOCancelledCallInvite *)cancelledCallInvite
+                              error:(nonnull NSError *)error {
     NSLog(@"cancelledCallInviteReceived:");
     
     [self incomingPushHandled];
@@ -362,7 +373,7 @@ static NSString *const kTwimlParamTo = @"To";
 
 - (void)handleCallInviteReceived:(TVOCallInvite *)callInvite {
     NSLog(@"Call Invite Received: %@", callInvite.uuid);
-    // Two simlutaneous callInvites or calls are not supported by Twilio and cause an error
+    // Two simultaneous callInvites or calls are not supported by Twilio and cause an error
     // if the user attempts to answer the second call invite through CallKit.
     // Rather than surface the second invite, just reject it which will most likely
     // result in the second invite going to voicemail
@@ -394,6 +405,20 @@ static NSString *const kTwimlParamTo = @"To";
 }
 
 #pragma mark TVOCallDelegate
+
+- (void)callDidStartRinging:(TVOCall *)call {
+    NSLog(@"Call Did Start Ringing");
+}
+
+
+- (void)call:(TVOCall *)call isReconnectingWithError:(NSError *)error {
+    NSLog(@"Call is Reconnecting with Error: %@", [error localizedDescription]);
+}
+
+- (void)callDidReconnect:(TVOCall *)call {
+    NSLog(@"Call Did Reconnect: %@", [call description]);
+    
+}
 
 - (void)callDidConnect:(TVOCall *)call {
     NSLog(@"Call Did Connect: %@", [call description]);
@@ -429,7 +454,7 @@ static NSString *const kTwimlParamTo = @"To";
 }
 
 - (void)call:(TVOCall *)call didFailToConnectWithError:(NSError *)error {
-    NSLog(@"Call Did Fail with Error: %@, %@", [call description], [error localizedDescription]);
+    NSLog(@"Call Did Fail to Connect with Error: %@", [error localizedDescription]);
     if (self.enableCallKit) {
         self.callKitCompletionCallback(NO);
     }
@@ -466,7 +491,7 @@ static NSString *const kTwimlParamTo = @"To";
 - (NSString*) stringFromCallState:(TVOCallState)state {
     if (state == TVOCallStateRinging) {
         return @"ringing";
-    } else if (state == TVOCallStateConnected) {
+    } else if (state == TVOCallStateConnected || state == TVOCallStateReconnecting) {
         return @"connected";
     } else if (state == TVOCallStateConnecting) {
         return @"connecting";
@@ -578,10 +603,10 @@ static NSString *const kTwimlParamTo = @"To";
         TwilioVoicePlugin __strong *strongSelf = weakSelf;
         if (success) {
             [strongSelf.callKitProvider reportOutgoingCallWithUUID:action.callUUID connectedAtDate:[NSDate date]];
-            [action fulfill];
         } else {
             [action fail];
         }
+        [action fulfill];
     }];
 }
 
@@ -620,7 +645,7 @@ static NSString *const kTwimlParamTo = @"To";
 }
 
 - (void)provider:(CXProvider *)provider performSetHeldCallAction:(CXSetHeldCallAction *)action {
-    if (self.call && self.call.state == TVOCallStateConnected) {
+    if (self.call && (self.call.state == TVOCallStateConnected || self.call.state == TVOCallStateReconnecting)) {
         [self.call setOnHold:action.isOnHold];
         [action fulfill];
     } else {
@@ -696,10 +721,9 @@ static NSString *const kTwimlParamTo = @"To";
                           client:(NSString *)client
                       completion:(void(^)(BOOL success))completionHandler {
     
-    TwilioVoicePlugin __weak *weakSelf = self;
+    NSString *to = self.outgoingCallParams[@"To"];
     TVOConnectOptions *connectOptions = [TVOConnectOptions optionsWithAccessToken:self.accessToken block:^(TVOConnectOptionsBuilder *builder) {
-        TwilioVoicePlugin __strong *strongSelf = weakSelf;
-        builder.params = @{kTwimlParamTo: strongSelf.outgoingCallParams[@"To"]};
+        builder.params = @{kTwimlParamTo: to};
         builder.uuid = uuid;
     }];
     self.call = [TwilioVoice connectWithOptions:connectOptions delegate:self];
@@ -727,3 +751,4 @@ static NSString *const kTwimlParamTo = @"To";
 }
 
 @end
+
