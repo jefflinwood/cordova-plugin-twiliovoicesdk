@@ -161,7 +161,9 @@ static NSString *const kTwimlParamTo = @"To";
 
 - (void) call:(CDVInvokedUrlCommand*)command {
     if ([command.arguments count] > 0) {
-        self.accessToken = command.arguments[0];
+        if (command.arguments[0] != [NSNull null]) {
+            self.accessToken = command.arguments[0];
+        }
         if ([command.arguments count] > 1) {
             self.outgoingCallParams = command.arguments[1];
         }
@@ -601,10 +603,10 @@ static NSString *const kTwimlParamTo = @"To";
         TwilioVoicePlugin __strong *strongSelf = weakSelf;
         if (success) {
             [strongSelf.callKitProvider reportOutgoingCallWithUUID:action.callUUID connectedAtDate:[NSDate date]];
-            [action fulfill];
         } else {
             [action fail];
         }
+        [action fulfill];
     }];
 }
 
@@ -719,10 +721,9 @@ static NSString *const kTwimlParamTo = @"To";
                           client:(NSString *)client
                       completion:(void(^)(BOOL success))completionHandler {
     
-    TwilioVoicePlugin __weak *weakSelf = self;
+    NSString *to = self.outgoingCallParams[@"To"];
     TVOConnectOptions *connectOptions = [TVOConnectOptions optionsWithAccessToken:self.accessToken block:^(TVOConnectOptionsBuilder *builder) {
-        TwilioVoicePlugin __strong *strongSelf = weakSelf;
-        builder.params = @{kTwimlParamTo: strongSelf.outgoingCallParams[@"To"]};
+        builder.params = @{kTwimlParamTo: to};
         builder.uuid = uuid;
     }];
     self.call = [TwilioVoice connectWithOptions:connectOptions delegate:self];
@@ -750,3 +751,4 @@ static NSString *const kTwimlParamTo = @"To";
 }
 
 @end
+
