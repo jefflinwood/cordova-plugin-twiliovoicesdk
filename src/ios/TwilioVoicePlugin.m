@@ -177,9 +177,12 @@ static NSString *const kTwimlParamTo = @"To";
                 [self performStartCallActionWithUUID:uuid handle:incomingCallAppName];
             } else {
                 NSLog(@"Making call to with params %@", self.outgoingCallParams);
+                if (self.outgoingCallParams == nil) {
+                    self.outgoingCallParams = [NSDictionary new];
+                }
                 TVOConnectOptions *connectOptions = [TVOConnectOptions optionsWithAccessToken:self.accessToken
                                                                                         block:^(TVOConnectOptionsBuilder *builder) {
-                                                                                            builder.params = @{kTwimlParamTo:self.outgoingCallParams[@"To"]};
+                    builder.params = self.outgoingCallParams;
                                                                                         }];
                 self.call = [TwilioVoice connectWithOptions:connectOptions delegate:self];
                 self.outgoingCallParams = nil;
@@ -284,6 +287,7 @@ static NSString *const kTwimlParamTo = @"To";
     if ([type isEqualToString:PKPushTypeVoIP]) {
         self.pushDeviceTokenData = credentials.token;
         NSLog(@"Updating push device token for VOIP");
+        
         
         [TwilioVoice registerWithAccessToken:self.accessToken
                              deviceTokenData:credentials.token
@@ -721,9 +725,11 @@ static NSString *const kTwimlParamTo = @"To";
                           client:(NSString *)client
                       completion:(void(^)(BOOL success))completionHandler {
     
-    NSString *to = self.outgoingCallParams[@"To"];
+    if (self.outgoingCallParams == nil) {
+        self.outgoingCallParams = [NSDictionary new];
+    }
     TVOConnectOptions *connectOptions = [TVOConnectOptions optionsWithAccessToken:self.accessToken block:^(TVOConnectOptionsBuilder *builder) {
-        builder.params = @{kTwimlParamTo: to};
+        builder.params = self.outgoingCallParams;
         builder.uuid = uuid;
     }];
     self.call = [TwilioVoice connectWithOptions:connectOptions delegate:self];
