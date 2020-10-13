@@ -1,3 +1,5 @@
+[![npm version](https://badge.fury.io/js/cordova-plugin-twiliovoicesdk.svg)](https://badge.fury.io/js/cordova-plugin-twiliovoicesdk)
+
 # Cordova Plugin for Twilio Voice
 PhoneGap/Cordova Plugin for Twilio Programmable Voice SDK
 
