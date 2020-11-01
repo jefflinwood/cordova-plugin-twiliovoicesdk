@@ -4,7 +4,7 @@
 PhoneGap/Cordova Plugin for Twilio Programmable Voice SDK
 
 # Changed Package Name to cordova-plugin-twiliovoicesdk
-Note - as of August 21, 2018, this NPM package name will match the Cordova Plugin id (as version 3.0.x)
+Note - as of August 21, 2018, this NPM package name will match the Cordova Plugin id.
 
 ## Example Application
 Looking for a simple Cordova/PhoneGap starter application to show how this is used?
@@ -17,12 +17,9 @@ https://www.twilio.com/docs/api/voice-sdk
 Android SDK example:
 https://github.com/twilio/voice-quickstart-android/
 
-If you are using the Twilio Client SDK for iOS and Android, see the earlier Twilio Client Plugin
+If you are using the Twilio Client SDK for iOS and Android, see the earlier Twilio Client Plugin (now deprecated)
 https://github.com/jefflinwood/twilio_client_phonegap
-
-## Note - the To parameter for dialing out
-
-The most recent pull request merged in to the plug-in only supports the use of `To` as a parameter to be used for dialing out - if your application uses `tocall` or similar, you will need to adjust this plugin's constant, for now).
+\
 
 ## Available on NPM
 
