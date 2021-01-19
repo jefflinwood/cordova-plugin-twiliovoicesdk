@@ -14,11 +14,19 @@ import android.media.AudioFocusRequest;
 import android.media.AudioManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.v4.app.NotificationCompat;
-import android.support.v4.content.LocalBroadcastManager;
-import android.util.Log;
 
+import androidx.annotation.NonNull;
+import androidx.core.app.NotificationCompat;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+import android.util.Log;
+import android.widget.Toast;
+
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.iid.FirebaseInstanceId;
+import com.google.firebase.installations.FirebaseInstallations;
+import com.google.firebase.installations.InstallationTokenResult;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.twilio.voice.Call;
 import com.twilio.voice.CallException;
 import com.twilio.voice.CallInvite;
@@ -99,7 +107,7 @@ public class TwilioVoicePlugin extends CordovaPlugin {
                 Log.i(TAG, "FCM Token : " + fcmToken);
                 mFCMToken = fcmToken;
                 if (fcmToken == null) {
-                    javascriptErrorback(0, "Did not receive GCM Token - unable to receive calls", mInitCallbackContext);
+                    javascriptErrorback(0, "Did not receive FCM Token - unable to receive calls", mInitCallbackContext);
                 }
                 if (mFCMToken != null) {
                     register();
@@ -124,6 +132,8 @@ public class TwilioVoicePlugin extends CordovaPlugin {
         public void onError(RegistrationException exception, String accessToken, String fcmToken) {
             Log.e(TAG, "Error registering Voice Client: " + exception.getMessage(), exception);
         }
+
+
     };
 
     // Twilio Voice Call Listener
@@ -151,6 +161,16 @@ public class TwilioVoicePlugin extends CordovaPlugin {
                     Log.e(TAG, e.getMessage(), e);
                 }
                 javascriptCallback("oncalldidconnect", callProperties, mInitCallbackContext);
+            }
+
+            @Override
+            public void onReconnecting(@NonNull Call call, @NonNull CallException callException) {
+                Log.d(TAG, "Reconnecting");
+            }
+
+            @Override
+            public void onReconnected(@NonNull Call call) {
+                Log.d(TAG, "Reconnected");
             }
 
             @Override
@@ -187,6 +207,25 @@ public class TwilioVoicePlugin extends CordovaPlugin {
         if (intent.getAction().equals(ACTION_INCOMING_CALL)) {
             mIncomingCallIntent = intent;
         }
+
+        // Get the Firebase token
+        FirebaseMessaging.getInstance().getToken()
+                .addOnCompleteListener(new OnCompleteListener<String>() {
+                    @Override
+                    public void onComplete(@NonNull Task<String> task) {
+                        if (!task.isSuccessful()) {
+                            Log.w(TAG, "Fetching FCM registration token failed", task.getException());
+                            return;
+                        }
+
+                        // Get new FCM registration token
+                        String token = task.getResult();
+
+                        Log.i(TAG, "Retrieved FCM Token: " + token);
+                        mFCMToken = token;
+                        register();
+                    }
+                });
     }
 
     @Override

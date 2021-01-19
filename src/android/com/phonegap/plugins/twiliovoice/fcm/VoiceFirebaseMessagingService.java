@@ -7,25 +7,29 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.PowerManager;
 import android.net.Uri;
 import android.service.notification.StatusBarNotification;
-import android.support.annotation.NonNull;
-import android.support.v4.app.NotificationCompat;
-import android.support.v4.content.LocalBroadcastManager;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.core.app.NotificationCompat;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import android.util.Log;
 
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
+import com.twilio.voice.CallException;
 import com.twilio.voice.CallInvite;
 import com.twilio.voice.CancelledCallInvite;
 import com.twilio.voice.MessageListener;
 import com.twilio.voice.Voice;
 
 import static android.R.attr.data;
+import static android.R.attr.packageNames;
 
 import com.phonegap.plugins.twiliovoice.SoundPoolManager;
 import com.phonegap.plugins.twiliovoice.TwilioVoicePlugin;
@@ -47,6 +51,15 @@ public class VoiceFirebaseMessagingService extends FirebaseMessagingService {
         notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
     }
 
+    @Override
+    public void onNewToken(String token) {
+        super.onNewToken(token);
+        Log.i(TAG, "onNewToken: " + token);
+        Intent intent = new Intent(TwilioVoicePlugin.ACTION_SET_FCM_TOKEN);
+        intent.putExtra(TwilioVoicePlugin.KEY_FCM_TOKEN, token);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+    }
+
     /**
      * Called when message is received.
      *
@@ -58,11 +71,11 @@ public class VoiceFirebaseMessagingService extends FirebaseMessagingService {
         Log.d(TAG, "Bundle data: " + remoteMessage.getData());
         Log.d(TAG, "From: " + remoteMessage.getFrom());
 
-        // Check if message contains a data payload.
+        // Check ifx message contains a data payload.
         if (remoteMessage.getData().size() > 0) {
             Map<String, String> data = remoteMessage.getData();
             final int notificationId = (int) (System.currentTimeMillis() % Integer.MAX_VALUE);
-            Voice.handleMessage(data, new MessageListener() {
+            Voice.handleMessage(this, data, new MessageListener()  {
                 @Override
                 public void onCallInvite(CallInvite callInvite) {
                     VoiceFirebaseMessagingService.this.notify(callInvite, notificationId);
@@ -70,8 +83,9 @@ public class VoiceFirebaseMessagingService extends FirebaseMessagingService {
                 }
 
                 @Override
-                public void onCancelledCallInvite(@NonNull CancelledCallInvite cancelledCallInvite) {
+                public void onCancelledCallInvite(@NonNull CancelledCallInvite cancelledCallInvite, @Nullable CallException callException) {
                     Log.e(TAG, cancelledCallInvite.getFrom());
+
                 }
             });
         }
@@ -138,7 +152,10 @@ public class VoiceFirebaseMessagingService extends FirebaseMessagingService {
      */
     @TargetApi(Build.VERSION_CODES.O)
     public Notification buildNotification(String text, PendingIntent pendingIntent, Bundle extras) {
-        int iconIdentifier = getResources().getIdentifier("icon", "mipmap", getPackageName());
+        int iconIdentifier = getResources().getIdentifier("ic_launcher", "mipmap", getPackageName());
+        if (iconIdentifier == 0) {
+            iconIdentifier = getResources().getIdentifier("ic_launcher", "drawable", getPackageName());
+        }
         int incomingCallAppNameId = getResources().getIdentifier("incoming_call_app_name", "string", getPackageName());
         String contentTitle = getString(incomingCallAppNameId);
         return new Notification.Builder(getApplicationContext(), VOICE_CHANNEL)
