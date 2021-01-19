@@ -22,6 +22,12 @@ If you don't add that, you will see this error:
 This project uses AndroidX dependencies, but the 'android.useAndroidX' property is not enabled. Set this property to true in the gradle.properties file and retry.
 ```
 
+## Android X Required
+
+If you use any Android plugins that do not support AndroidX, please add this plugin to your project:
+
+https://github.com/dpa99c/cordova-plugin-androidx-adapter
+
 ## Example Application
 Looking for a simple Cordova/PhoneGap starter application to show how this is used?
 https://github.com/jefflinwood/twilio-voice-phonegap-example
