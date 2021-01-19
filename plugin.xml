@@ -2,7 +2,7 @@
 <plugin xmlns="http://www.phonegap.com/ns/plugins/1.0"
     xmlns:android="http://schemas.android.com/apk/res/android"
     id="cordova-plugin-twiliovoicesdk"
-    version="5.5.1">
+    version="5.6.0">
 
     <name>TwilioVoice</name>
     <description>Use the Twilio Voice SDK for iOS or Android with Cordova/PhoneGap. Successor to Twilio Client Plugin</description>
@@ -36,7 +36,8 @@
             </feature>
         </config-file>
 
-        <dependency id="phonegap-plugin-push"/>
+        <dependency id="cordova-plugin-device"/>
+        <dependency id="cordova-plugin-android-permissions"/>
 
         <config-file target="AndroidManifest.xml" parent="/manifest/application">
             <!-- [START fcm_listener] -->
@@ -47,15 +48,6 @@
                 </intent-filter>
             </service>
             <!-- [END fcm_listener] -->
-            <!-- [START instanceId_listener] -->
-                <service
-                    android:name="com.phonegap.plugins.twiliovoice.fcm.VoiceFirebaseInstanceIDService" >
-                <intent-filter>
-                    <action android:name="com.google.firebase.INSTANCE_ID_EVENT" />
-                </intent-filter>
-            </service>
-            <!-- [END instanceId_listener] -->
-
             <meta-data
                 android:name="com.google.android.gms.version"
                 android:value="@integer/google_play_services_version" />
@@ -71,16 +63,14 @@
             <string name="incoming_call_app_name" translatable="false">$INCOMING_CALL_APP_NAME</string>
         </config-file>
 
-        <framework src="com.google.gms:google-services:3.0.0" />
-        <framework src="com.google.firebase:firebase-messaging:10.2.1" />
-        <framework src="com.twilio:voice-android:3.0.0"/>
+        <framework src="com.google.gms:google-services:4.3.4" />
+        <framework src="com.google.firebase:firebase-messaging:21.0.1" />
+        <framework src="com.twilio:voice-android:5.6.1"/>
 
         <source-file src="src/android/com/phonegap/plugins/twiliovoice/TwilioVoicePlugin.java"
                 target-dir="src/com/phonegap/plugins/twiliovoice" />
         <source-file src="src/android/com/phonegap/plugins/twiliovoice/SoundPoolManager.java"
                 target-dir="src/com/phonegap/plugins/twiliovoice" />
-        <source-file src="src/android/com/phonegap/plugins/twiliovoice/fcm/VoiceFirebaseInstanceIDService.java"
-                target-dir="src/com/phonegap/plugins/twiliovoice/fcm" />
         <source-file src="src/android/com/phonegap/plugins/twiliovoice/fcm/VoiceFirebaseMessagingService.java"
                      target-dir="src/com/phonegap/plugins/twiliovoice/fcm" />
 

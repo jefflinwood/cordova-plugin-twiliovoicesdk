@@ -6,6 +6,22 @@ PhoneGap/Cordova Plugin for Twilio Programmable Voice SDK
 # Changed Package Name to cordova-plugin-twiliovoicesdk
 Note - as of August 21, 2018, this NPM package name will match the Cordova Plugin id.
 
+# Requires AndroidX (Android only)
+Note - as of January 15, this requires AndroidX support, as well as Cordova Android 9 or above. You also need to set up Firebase Cloud Messaging (FCM), and include a `google-services.json` file in your `platforms/android/app` directory
+
+In your Cordova project's `config.xml`, add these options:
+
+```xml
+<preference name="AndroidXEnabled" value="true" />
+<preference name="GradlePluginGoogleServicesEnabled" value="true"/>
+```
+
+If you don't add that, you will see this error:
+
+```
+This project uses AndroidX dependencies, but the 'android.useAndroidX' property is not enabled. Set this property to true in the gradle.properties file and retry.
+```
+
 ## Example Application
 Looking for a simple Cordova/PhoneGap starter application to show how this is used?
 https://github.com/jefflinwood/twilio-voice-phonegap-example
@@ -17,9 +33,9 @@ https://www.twilio.com/docs/api/voice-sdk
 Android SDK example:
 https://github.com/twilio/voice-quickstart-android/
 
-If you are using the Twilio Client SDK for iOS and Android, see the earlier Twilio Client Plugin (now deprecated)
+If you are using the Twilio Client SDK for iOS and Android, see the earlier Twilio Client Plugin (now deprecated and obsolete)
 https://github.com/jefflinwood/twilio_client_phonegap
-\
+
 
 ## Available on NPM
 
