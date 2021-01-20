@@ -342,6 +342,7 @@ public class TwilioVoicePlugin extends CordovaPlugin {
     }
 
     private void acceptCallInvite(JSONArray arguments, final CallbackContext callbackContext) {
+        SoundPoolManager.getInstance(cordova.getActivity()).stopRinging();
         if (mCallInvite == null) {
             callbackContext.sendPluginResult(new PluginResult(
                     PluginResult.Status.ERROR));
@@ -357,6 +358,7 @@ public class TwilioVoicePlugin extends CordovaPlugin {
     }
 
     private void rejectCallInvite(JSONArray arguments, final CallbackContext callbackContext) {
+        SoundPoolManager.getInstance(cordova.getActivity()).stopRinging();
         if (mCallInvite == null) {
             callbackContext.sendPluginResult(new PluginResult(
                     PluginResult.Status.ERROR));
@@ -371,6 +373,7 @@ public class TwilioVoicePlugin extends CordovaPlugin {
     }
 
     private void disconnect(JSONArray arguments, final CallbackContext callbackContext) {
+        SoundPoolManager.getInstance(cordova.getActivity()).stopRinging();
         if (mCall == null) {
             callbackContext.sendPluginResult(new PluginResult(
                     PluginResult.Status.ERROR));
