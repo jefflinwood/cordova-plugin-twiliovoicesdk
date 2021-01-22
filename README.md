@@ -7,7 +7,7 @@ PhoneGap/Cordova Plugin for Twilio Programmable Voice SDK
 Note - as of August 21, 2018, this NPM package name will match the Cordova Plugin id.
 
 # Requires AndroidX (Android only)
-Note - as of January 15, this requires AndroidX support, as well as Cordova Android 9 or above. You also need to set up Firebase Cloud Messaging (FCM), and include a `google-services.json` file in your `platforms/android/app` directory
+Note - as of January 15, 2021, this requires AndroidX support, as well as Cordova Android 9 or above. You also need to set up Firebase Cloud Messaging (FCM), and include a `google-services.json` file in your `platforms/android/app` directory
 
 In your Cordova project's `config.xml`, add these options:
 
