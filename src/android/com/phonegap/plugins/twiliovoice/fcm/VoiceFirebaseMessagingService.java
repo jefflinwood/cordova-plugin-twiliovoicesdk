@@ -84,8 +84,8 @@ public class VoiceFirebaseMessagingService extends FirebaseMessagingService {
 
                 @Override
                 public void onCancelledCallInvite(@NonNull CancelledCallInvite cancelledCallInvite, @Nullable CallException callException) {
-                    Log.e(TAG, cancelledCallInvite.getFrom());
-
+                    Log.i(TAG, "Canceling call invite from: " + cancelledCallInvite.getFrom());
+                    VoiceFirebaseMessagingService.this.sendCancelledCallToPlugin(notificationId);
                 }
             });
         }
@@ -175,6 +175,16 @@ public class VoiceFirebaseMessagingService extends FirebaseMessagingService {
         Intent intent = new Intent(TwilioVoicePlugin.ACTION_INCOMING_CALL);
         intent.putExtra(TwilioVoicePlugin.INCOMING_CALL_INVITE, incomingCallMessage);
         intent.putExtra(TwilioVoicePlugin.INCOMING_CALL_NOTIFICATION_ID, notificationId);
+        intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+    }
+
+    /*
+     * Send the CancelledCallMessage to the Plugin
+     */
+    private void sendCancelledCallToPlugin(int notificationId) {
+        Log.d(TAG, "sendCancelledCallToPlugin");
+        Intent intent = new Intent(TwilioVoicePlugin.ACTION_CANCELLED_CALL);
         intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
