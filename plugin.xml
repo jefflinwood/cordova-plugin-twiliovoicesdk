@@ -41,12 +41,12 @@
 
         <config-file target="AndroidManifest.xml" parent="/manifest/application">
             <!-- [START fcm_listener] -->
-            <service
+            <!-- <service
                 android:name="com.phonegap.plugins.twiliovoice.fcm.VoiceFirebaseMessagingService">
                 <intent-filter>
                     <action android:name="com.google.firebase.MESSAGING_EVENT" />
                 </intent-filter>
-            </service>
+            </service> -->
             <!-- [END fcm_listener] -->
             <meta-data
                 android:name="com.google.android.gms.version"
@@ -65,13 +65,15 @@
 
         <framework src="com.google.gms:google-services:4.3.4" />
         <framework src="com.google.firebase:firebase-messaging:21.0.1" />
-        <framework src="com.twilio:voice-android:5.6.1"/>
+        <framework src="com.twilio:voice-android:5.7.2"/>
 
         <source-file src="src/android/com/phonegap/plugins/twiliovoice/TwilioVoicePlugin.java"
                 target-dir="src/com/phonegap/plugins/twiliovoice" />
         <source-file src="src/android/com/phonegap/plugins/twiliovoice/SoundPoolManager.java"
                 target-dir="src/com/phonegap/plugins/twiliovoice" />
         <source-file src="src/android/com/phonegap/plugins/twiliovoice/fcm/VoiceFirebaseMessagingService.java"
+                     target-dir="src/com/phonegap/plugins/twiliovoice/fcm" />
+        <source-file src="src/android/com/phonegap/plugins/twiliovoice/fcm/CallRingtoneManager.java"
                      target-dir="src/com/phonegap/plugins/twiliovoice/fcm" />
 
         <resource-file src="sounds/ringing.wav" target="res/raw/ringing.wav"/>

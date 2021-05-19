@@ -16,10 +16,12 @@ import android.net.Uri;
 import android.service.notification.StatusBarNotification;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import android.util.Log;
 
+import com.aloware.talk.R;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 import com.twilio.voice.CallException;
@@ -31,7 +33,7 @@ import com.twilio.voice.Voice;
 import static android.R.attr.data;
 import static android.R.attr.packageNames;
 
-import com.phonegap.plugins.twiliovoice.SoundPoolManager;
+
 import com.phonegap.plugins.twiliovoice.TwilioVoicePlugin;
 
 import java.util.Map;
@@ -108,14 +110,7 @@ public class VoiceFirebaseMessagingService extends FirebaseMessagingService {
         extras.putString(CALL_SID_KEY, callSid);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel callInviteChannel = new NotificationChannel(VOICE_CHANNEL,
-                    "Primary Voice Channel", NotificationManager.IMPORTANCE_DEFAULT);
-            callInviteChannel.setLightColor(Color.RED);
-            callInviteChannel.setLockscreenVisibility(Notification.VISIBILITY_PRIVATE);
-            notificationManager.createNotificationChannel(callInviteChannel);
-
-            notification = buildNotification(callInvite.getFrom() + " is calling", pendingIntent, extras);
-            notificationManager.notify(notificationId, notification);
+          buildNotificationUI(notificationId, callInvite.getFrom(), pendingIntent, extras);
         } else {
             int iconIdentifier = getResources().getIdentifier("icon", "mipmap", getPackageName());
             int incomingCallAppNameId = (int) getResources().getIdentifier("incoming_call_app_name", "string", getPackageName());
@@ -142,6 +137,41 @@ public class VoiceFirebaseMessagingService extends FirebaseMessagingService {
         }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    public void buildNotificationUI(int notificationId, String text, PendingIntent pendingIntent, Bundle extras) {
+      int iconIdentifier = getResources().getIdentifier("ic_launcher", "mipmap", getPackageName());
+      if (iconIdentifier == 0) {
+        iconIdentifier = getResources().getIdentifier("ic_launcher", "drawable", getPackageName());
+      }
+
+      NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(getApplicationContext(), VOICE_CHANNEL);
+
+      int incomingCallAppNameId = getResources().getIdentifier("incoming_call_app_name", "string", getPackageName());
+
+      NotificationCompat.BigTextStyle bigText = new NotificationCompat.BigTextStyle();
+      bigText.setBigContentTitle(text);
+      bigText.setSummaryText(getResources().getString(R.string.incoming_notif_subtitle));
+      mBuilder.setContentIntent(pendingIntent);
+      mBuilder.setSmallIcon(iconIdentifier);
+      mBuilder.setContentText(getString(incomingCallAppNameId));
+      mBuilder.setPriority(Notification.PRIORITY_MAX);
+      mBuilder.setExtras(extras);
+      mBuilder.setStyle(bigText);
+
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        NotificationChannel channel = new NotificationChannel(
+          VOICE_CHANNEL,
+          "Primary Voice Channel",
+          NotificationManager.IMPORTANCE_MAX);
+
+        channel.setLightColor(Color.RED);
+        channel.setLockscreenVisibility(Notification.VISIBILITY_PRIVATE);
+        notificationManager.createNotificationChannel(channel);
+        mBuilder.setChannelId(VOICE_CHANNEL);
+      }
+      notificationManager.notify(notificationId, mBuilder.build());
+    }
+
     /**
      * Build a notification.
      *
@@ -160,11 +190,12 @@ public class VoiceFirebaseMessagingService extends FirebaseMessagingService {
         String contentTitle = getString(incomingCallAppNameId);
         return new Notification.Builder(getApplicationContext(), VOICE_CHANNEL)
                 .setSmallIcon(iconIdentifier)
-                .setContentTitle(contentTitle)
-                .setContentText(text)
+                .setContentTitle(text)
+                .setContentText(getResources().getString(R.string.incoming_notif_subtitle))
                 .setContentIntent(pendingIntent)
                 .setExtras(extras)
                 .setAutoCancel(true)
+                .setPriority(Notification.PRIORITY_MAX)
                 .build();
     }
 

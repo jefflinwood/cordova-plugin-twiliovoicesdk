@@ -1,7 +1,7 @@
 {
-  "name": "cordova-plugin-twiliovoicesdk",
-  "version": "6.0.0",
-  "description": "Use the Twilio Voice SDK for iOS or Android with Cordova/PhoneGap. Successor to Twilio Client Plugin",
+  "name": "aloware-plugin-twiliovoicesdk",
+  "version": "6.1.0",
+  "description": "Use the Twilio Voice SDK for iOS or Android with Cordova/PhoneGap for Aloware Mobile Application. Successor to Twilio Client Plugin",
   "cordova": {
     "id": "cordova-plugin-twiliovoicesdk",
     "platforms": [
@@ -11,14 +11,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/jefflinwood/cordova-plugin-twiliovoicesdk.git"
+    "url": "git+ssh://git@github.com/aloware/cordova-plugin-twiliovoicesdk.git"
   },
   "keywords": [
     "ecosystem:cordova",
     "cordova-android",
     "cordova-ios"
   ],
-  "engines":  {
+  "engines": {
     "cordovaDependencies": {
       "<2.5.0": {
         "cordova-ios": ">=4.3.0",
@@ -32,10 +32,14 @@
       }
     }
   },
-  "author": "Jeff Linwood",
+  "author": "Aloware",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/jefflinwood/cordova-plugin-twiliovoicesdk/issues"
+    "url": "https://github.com/aloware/cordova-plugin-twiliovoicesdk/issues"
   },
-  "homepage": "https://github.com/jefflinwood/cordova-plugin-twiliovoicesdk#readme"
+  "homepage": "https://github.com/aloware/cordova-plugin-twiliovoicesdk#readme",
+  "main": "https://github.com/aloware/cordova-plugin-twiliovoicesdk",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
 }
