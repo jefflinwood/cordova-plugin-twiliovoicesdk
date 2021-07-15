@@ -161,19 +161,15 @@ static NSString *const kTwimlParamTo = @"To";
 
 - (void) call:(CDVInvokedUrlCommand*)command {
     if ([command.arguments count] > 0) {
-        
-        
-        
         if (command.arguments[0] != [NSNull null]) {
             self.accessToken = command.arguments[0];
         }
         if ([command.arguments count] > 1) {
             if ( [allTrim( command.arguments[1] ) length] == 0 ) {
-                NSDictionary *inventory = @{
-                    @"" : command.arguments[1]
+                NSDictionary *calleeDetails = @{
+                    @"to" : command.arguments[1]
                 };
-                self.outgoingCallParams = inventory; //command.arguments[1];
-            
+                self.outgoingCallParams = calleeDetails;
             }else {
                 self.outgoingCallParams = [[NSMutableDictionary alloc] init];
             }
