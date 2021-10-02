@@ -589,7 +589,7 @@ public class TwilioVoicePlugin extends CordovaPlugin {
     private void javascriptErrorback(int errorCode, String errorMessage, CallbackContext callbackContext) {
         JSONObject object = new JSONObject();
         try {
-            object.putOpt("message", errorMessage);
+            object.putOpt("message", Integer.toString(errorCode) + ": " + errorMessage);
         } catch (JSONException e) {
             callbackContext.sendPluginResult(new PluginResult(
                     PluginResult.Status.JSON_EXCEPTION));
