@@ -4,6 +4,7 @@
 Cordova Plugin for Twilio Programmable Voice SDK
 
 # Changelog
+* 6.0.3 - October 31, 2021 - Support all parameters being passed to the Android plugin, not just "To"
 * 6.0.2 - October 2, 2021 - Added error code to error message for debugging in Android
 * 6.0.1 - October 1, 2021 - Updated to support Twilio Voice SDK 5.8.0 for Android
 * 6.0.0 - April 18, 2021 - Updated to support Twilio Voice SDK 6.2.2 for iOS
