@@ -165,9 +165,7 @@ static NSString *const kTwimlParamTo = @"To";
             self.accessToken = command.arguments[0];
         }
         if ([command.arguments count] > 1) {
-            self.outgoingCallParams = @{
-                "to": command.arguments[1]
-            };
+            self.outgoingCallParams = command.arguments[1];
         }
         
         if (self.call && (self.call.state == TVOCallStateConnected || self.call.state == TVOCallStateReconnecting)) {
