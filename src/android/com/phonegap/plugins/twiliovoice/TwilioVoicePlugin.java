@@ -773,7 +773,12 @@ public class TwilioVoicePlugin extends CordovaPlugin {
 
     private DialogInterface.OnClickListener cancelCallClickListener() {
         return (dialogInterface, i) -> {
-            rejectCallInvite(null, null);
+            rejectCallInvite(null, new CallbackContext(null, TwilioVoicePlugin.this.webView) {
+                @Override
+                public void success() {
+                    javascriptCallback("oncallinvitecanceled", mInitCallbackContext);
+                }
+            });
 
             if (alertDialog != null && alertDialog.isShowing()) {
                 alertDialog.dismiss();
