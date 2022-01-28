@@ -485,6 +485,7 @@ public class TwilioVoicePlugin extends CordovaPlugin {
         SoundPoolManager.getInstance(cordova.getActivity()).stopRinging();
         if (alertDialog != null && alertDialog.isShowing()) {
             alertDialog.dismiss();
+            alertDialog = null;
         }
 
         NotificationManager mNotifyMgr =
@@ -756,6 +757,11 @@ public class TwilioVoicePlugin extends CordovaPlugin {
     private void showIncomingCallDialog() {
         SoundPoolManager.getInstance(cordova.getActivity()).playRinging();
         if (mCallInvite != null) {
+            if (alertDialog != null && alertDialog.isShowing()) {
+                alertDialog.dismiss();
+                alertDialog = null;
+            }
+
             alertDialog = createIncomingCallDialog(cordova.getActivity(),
                     mCallInvite,
                     answerCallClickListener(),
@@ -785,6 +791,7 @@ public class TwilioVoicePlugin extends CordovaPlugin {
 
             if (alertDialog != null && alertDialog.isShowing()) {
                 alertDialog.dismiss();
+                alertDialog = null;
             }
         };
     }
@@ -809,6 +816,7 @@ public class TwilioVoicePlugin extends CordovaPlugin {
 
             if (alertDialog != null && alertDialog.isShowing()) {
                 alertDialog.dismiss();
+                alertDialog = null;
             }
         };
     }
