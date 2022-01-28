@@ -370,9 +370,20 @@ static NSString *const kTwimlParamTo = @"To";
         [self.ringtonePlayer pause];
     }
     
+    NSMutableDictionary *callInviteProperties = [NSMutableDictionary new];
+    if (self.callInvite.from) {
+        callInviteProperties[@"from"] = self.callInvite.from;
+    }
+    if (self.callInvite.to) {
+        callInviteProperties[@"to"] = self.callInvite.to;
+    }
+    if (self.callInvite.callSid) {
+        callInviteProperties[@"callSid"] = self.callInvite.callSid;
+    }
+    
     self.callInvite = nil;
     [self incomingPushHandled];
-    [self javascriptCallback:@"oncallinvitecanceled"];
+    [self javascriptCallback:@"oncallinvitecanceled" withArguments:callInviteProperties];
 }
 
 - (void)handleCallInviteReceived:(TVOCallInvite *)callInvite {
@@ -383,11 +394,18 @@ static NSString *const kTwimlParamTo = @"To";
     // result in the second invite going to voicemail
     if (self.callInvite == nil && self.call == nil) {
         self.callInvite = callInvite;
-        NSDictionary *callInviteProperties = @{
-                                               @"from":callInvite.from,
-                                               @"to":callInvite.to,
-                                               @"callSid":callInvite.callSid
-                                               };
+        
+        NSMutableDictionary *callInviteProperties = [NSMutableDictionary new];
+        if (callInvite.from) {
+            callInviteProperties[@"from"] = callInvite.from;
+        }
+        if (callInvite.to) {
+            callInviteProperties[@"to"] = callInvite.to;
+        }
+        if (callInvite.callSid) {
+            callInviteProperties[@"callSid"] = callInvite.callSid;
+        }
+        
         if (self.enableCallKit) {
             [self reportIncomingCallFrom:(self.maskIncomingPhoneNumber ? @"Unknown" : callInvite.from) withUUID:callInvite.uuid];
         } else {
@@ -485,9 +503,20 @@ static NSString *const kTwimlParamTo = @"To";
         [self performEndCallActionWithUUID:call.uuid];
     }
     
+    NSMutableDictionary *callProperties = [NSMutableDictionary new];
+    if (call.from) {
+        callProperties[@"from"] = call.from;
+    }
+    if (call.to) {
+        callProperties[@"to"] = call.to;
+    }
+    if (call.sid) {
+        callProperties[@"callSid"] = call.sid;
+    }
+    
     self.call = nil;
     self.callKitCompletionCallback = nil;
-    [self javascriptCallback:@"oncalldiddisconnect"];
+    [self javascriptCallback:@"oncalldiddisconnect" withArguments:callProperties];
 }
 
 #pragma mark Conversion methods for the plugin
@@ -637,9 +666,20 @@ static NSString *const kTwimlParamTo = @"To";
     NSLog(@"provider:performEndCallAction:");
     
     if (self.callInvite) {
+        NSMutableDictionary *callInviteProperties = [NSMutableDictionary new];
+        if (self.callInvite.from) {
+            callInviteProperties[@"from"] = self.callInvite.from;
+        }
+        if (self.callInvite.to) {
+            callInviteProperties[@"to"] = self.callInvite.to;
+        }
+        if (self.callInvite.callSid) {
+            callInviteProperties[@"callSid"] = self.callInvite.callSid;
+        }
+        
         [self.callInvite reject];
         self.callInvite = nil;
-        [self javascriptCallback:@"oncallinvitecanceled"];
+        [self javascriptCallback:@"oncallinvitecanceled" withArguments:callInviteProperties];
     } else if (self.call) {
         [self.call disconnect];
     }

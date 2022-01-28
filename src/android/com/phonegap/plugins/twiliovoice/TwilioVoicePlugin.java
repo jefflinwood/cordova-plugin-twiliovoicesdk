@@ -187,9 +187,18 @@ public class TwilioVoicePlugin extends CordovaPlugin {
 
             @Override
             public void onDisconnected(Call call, CallException exception) {
+                JSONObject callProperties = new JSONObject();
+                try {
+                    callProperties.putOpt("from", mCall.getFrom());
+                    callProperties.putOpt("to", mCall.getTo());
+                    callProperties.putOpt("callSid", mCall.getSid());
+                } catch (JSONException e) {
+                    Log.e(TAG, e.getMessage(), e);
+                }
+
                 mCall = null;
                 setAudioFocus(false);
-                javascriptCallback("oncalldiddisconnect", mInitCallbackContext);
+                javascriptCallback("oncalldiddisconnect", callProperties, mInitCallbackContext);
             }
 
             @Override
@@ -482,7 +491,16 @@ public class TwilioVoicePlugin extends CordovaPlugin {
                 (NotificationManager) cordova.getActivity().getSystemService(Activity.NOTIFICATION_SERVICE);
         mNotifyMgr.cancel(mCallNotificationId);
 
-        javascriptCallback("oncallinvitecanceled", mInitCallbackContext);
+        JSONObject callInviteProperties = new JSONObject();
+        try {
+            callInviteProperties.putOpt("from", mCallInvite.getFrom());
+            callInviteProperties.putOpt("to", mCallInvite.getTo());
+            callInviteProperties.putOpt("callSid", mCallInvite.getCallSid());
+        } catch (JSONException e) {
+            Log.e(TAG, e.getMessage(), e);
+        }
+
+        javascriptCallback("oncallinvitecanceled", callInviteProperties, mInitCallbackContext);
     }
 
     private void callStatus(CallbackContext callbackContext) {
@@ -776,7 +794,16 @@ public class TwilioVoicePlugin extends CordovaPlugin {
             rejectCallInvite(null, new CallbackContext(null, TwilioVoicePlugin.this.webView) {
                 @Override
                 public void success() {
-                    javascriptCallback("oncallinvitecanceled", mInitCallbackContext);
+                    JSONObject callInviteProperties = new JSONObject();
+                    try {
+                        callInviteProperties.putOpt("from", mCallInvite.getFrom());
+                        callInviteProperties.putOpt("to", mCallInvite.getTo());
+                        callInviteProperties.putOpt("callSid", mCallInvite.getCallSid());
+                    } catch (JSONException e) {
+                        Log.e(TAG, e.getMessage(), e);
+                    }
+
+                    javascriptCallback("oncallinvitecanceled", callInviteProperties, mInitCallbackContext);
                 }
             });
 
