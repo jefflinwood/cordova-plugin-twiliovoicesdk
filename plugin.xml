@@ -75,6 +75,7 @@
                      target-dir="src/com/phonegap/plugins/twiliovoice/fcm" />
 
         <resource-file src="sounds/ringing.wav" target="res/raw/ringing.wav"/>
+        <resource-file src="src/android/res/drawable/ic_call_black_24dp.xml" target="res/drawable/ic_call_black_24dp.xml"/>
     </platform>
 
     <!-- ios -->

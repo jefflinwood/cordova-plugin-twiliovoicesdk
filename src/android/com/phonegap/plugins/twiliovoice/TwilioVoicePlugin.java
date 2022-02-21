@@ -2,10 +2,12 @@ package com.phonegap.plugins.twiliovoice;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
@@ -19,6 +21,7 @@ import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import android.util.Log;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -49,6 +52,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import capacitor.android.plugins.R;
+
 /**
  * Twilio Voice Plugin for Cordova/PhoneGap
  * <p>
@@ -71,6 +76,7 @@ public class TwilioVoicePlugin extends CordovaPlugin {
     // Twilio Voice Member Variables
     private Call mCall;
     private CallInvite mCallInvite;
+    private int mCallNotificationId;
 
     // Access Token
     private String mAccessToken;
@@ -98,6 +104,7 @@ public class TwilioVoicePlugin extends CordovaPlugin {
 
     private AudioManager audioManager;
     private int savedAudioMode = AudioManager.MODE_INVALID;
+    private AlertDialog alertDialog;
 
     private BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
         @Override
@@ -180,9 +187,18 @@ public class TwilioVoicePlugin extends CordovaPlugin {
 
             @Override
             public void onDisconnected(Call call, CallException exception) {
+                JSONObject callProperties = new JSONObject();
+                try {
+                    callProperties.putOpt("from", mCall.getFrom());
+                    callProperties.putOpt("to", mCall.getTo());
+                    callProperties.putOpt("callSid", mCall.getSid());
+                } catch (JSONException e) {
+                    Log.e(TAG, e.getMessage(), e);
+                }
+
                 mCall = null;
                 setAudioFocus(false);
-                javascriptCallback("oncalldiddisconnect", mInitCallbackContext);
+                javascriptCallback("oncalldiddisconnect", callProperties, mInitCallbackContext);
             }
 
             @Override
@@ -276,6 +292,8 @@ public class TwilioVoicePlugin extends CordovaPlugin {
             LocalBroadcastManager lbm = LocalBroadcastManager.getInstance(cordova.getActivity());
             lbm.registerReceiver(mBroadcastReceiver, intentFilter);
 
+            register();
+
             if (mIncomingCallIntent != null) {
                 Log.d(TAG, "initialize(): Handle an incoming call");
                 handleIncomingCallIntent(mIncomingCallIntent);
@@ -350,32 +368,47 @@ public class TwilioVoicePlugin extends CordovaPlugin {
     private void acceptCallInvite(JSONArray arguments, final CallbackContext callbackContext) {
         SoundPoolManager.getInstance(cordova.getActivity()).stopRinging();
         if (mCallInvite == null) {
-            callbackContext.sendPluginResult(new PluginResult(
-                    PluginResult.Status.ERROR));
+            if (callbackContext != null) {
+                callbackContext.sendPluginResult(new PluginResult(
+                        PluginResult.Status.ERROR));
+            }
             return;
         }
         cordova.getThreadPool().execute(new Runnable() {
             public void run() {
                 mCallInvite.accept(cordova.getActivity(), mCallListener);
-                callbackContext.success();
+                if (callbackContext != null) {
+                    callbackContext.success();
+                }
             }
         });
 
+        NotificationManager mNotifyMgr =
+                (NotificationManager) cordova.getActivity().getSystemService(Activity.NOTIFICATION_SERVICE);
+        mNotifyMgr.cancel(mCallNotificationId);
     }
 
     private void rejectCallInvite(JSONArray arguments, final CallbackContext callbackContext) {
         SoundPoolManager.getInstance(cordova.getActivity()).stopRinging();
         if (mCallInvite == null) {
-            callbackContext.sendPluginResult(new PluginResult(
-                    PluginResult.Status.ERROR));
+            if (callbackContext != null) {
+                callbackContext.sendPluginResult(new PluginResult(
+                        PluginResult.Status.ERROR));
+            }
             return;
         }
         cordova.getThreadPool().execute(new Runnable() {
             public void run() {
                 mCallInvite.reject(cordova.getActivity());
-                callbackContext.success();
+                if (callbackContext != null) {
+                    callbackContext.success();
+                }
             }
         });
+
+        NotificationManager mNotifyMgr =
+                (NotificationManager) cordova.getActivity().getSystemService(Activity.NOTIFICATION_SERVICE);
+        mNotifyMgr.cancel(mCallNotificationId);
     }
 
     private void disconnect(JSONArray arguments, final CallbackContext callbackContext) {
@@ -450,7 +483,25 @@ public class TwilioVoicePlugin extends CordovaPlugin {
     private void handleCancel() {
         Log.d(TAG, "handleCancel()");
         SoundPoolManager.getInstance(cordova.getActivity()).stopRinging();
-        javascriptCallback("oncallinvitecanceled", mInitCallbackContext);
+        if (alertDialog != null && alertDialog.isShowing()) {
+            alertDialog.dismiss();
+            alertDialog = null;
+        }
+
+        NotificationManager mNotifyMgr =
+                (NotificationManager) cordova.getActivity().getSystemService(Activity.NOTIFICATION_SERVICE);
+        mNotifyMgr.cancel(mCallNotificationId);
+
+        JSONObject callInviteProperties = new JSONObject();
+        try {
+            callInviteProperties.putOpt("from", mCallInvite.getFrom());
+            callInviteProperties.putOpt("to", mCallInvite.getTo());
+            callInviteProperties.putOpt("callSid", mCallInvite.getCallSid());
+        } catch (JSONException e) {
+            Log.e(TAG, e.getMessage(), e);
+        }
+
+        javascriptCallback("oncallinvitecanceled", callInviteProperties, mInitCallbackContext);
     }
 
     private void callStatus(CallbackContext callbackContext) {
@@ -627,6 +678,10 @@ public class TwilioVoicePlugin extends CordovaPlugin {
      * Register your FCM token with Twilio to enable receiving incoming calls via FCM
      */
     private void register() {
+        if (mAccessToken == null || mFCMToken == null) {
+            return;
+        }
+
         Voice.register(mAccessToken, Voice.RegistrationChannel.FCM, mFCMToken, mRegistrationListener);
     }
 
@@ -635,11 +690,11 @@ public class TwilioVoicePlugin extends CordovaPlugin {
         Log.d(TAG, "handleIncomingCallIntent()");
         if (intent != null && intent.getAction() != null && intent.getAction().equals(ACTION_INCOMING_CALL)) {
             mCallInvite = intent.getParcelableExtra(INCOMING_CALL_INVITE);
+            mCallNotificationId = intent.getIntExtra(INCOMING_CALL_NOTIFICATION_ID, 0);
+
             if (mCallInvite != null) {
-                SoundPoolManager.getInstance(cordova.getActivity()).playRinging();
-                NotificationManager mNotifyMgr =
-                        (NotificationManager) cordova.getActivity().getSystemService(Activity.NOTIFICATION_SERVICE);
-                mNotifyMgr.cancel(intent.getIntExtra(INCOMING_CALL_NOTIFICATION_ID, 0));
+                showIncomingCallDialog();
+
                 JSONObject callInviteProperties = new JSONObject();
                 try {
                     callInviteProperties.putOpt("from", mCallInvite.getFrom());
@@ -699,4 +754,70 @@ public class TwilioVoicePlugin extends CordovaPlugin {
         return json;
     }
 
+    private void showIncomingCallDialog() {
+        SoundPoolManager.getInstance(cordova.getActivity()).playRinging();
+        if (mCallInvite != null) {
+            if (alertDialog != null && alertDialog.isShowing()) {
+                alertDialog.dismiss();
+                alertDialog = null;
+            }
+
+            alertDialog = createIncomingCallDialog(cordova.getActivity(),
+                    mCallInvite,
+                    answerCallClickListener(),
+                    cancelCallClickListener());
+            alertDialog.show();
+        }
+    }
+
+    public static AlertDialog createIncomingCallDialog(
+            Context context,
+            CallInvite callInvite,
+            DialogInterface.OnClickListener answerCallClickListener,
+            DialogInterface.OnClickListener cancelClickListener) {
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(context);
+        alertDialogBuilder.setCancelable(false);
+        alertDialogBuilder.setIcon(R.drawable.ic_call_black_24dp);
+        alertDialogBuilder.setTitle("Incoming Call");
+        alertDialogBuilder.setPositiveButton("Accept", answerCallClickListener);
+        alertDialogBuilder.setNegativeButton("Reject", cancelClickListener);
+        alertDialogBuilder.setMessage(callInvite.getFrom() + " is calling with " + callInvite.getCallerInfo().isVerified() + " status");
+        return alertDialogBuilder.create();
+    }
+
+    private DialogInterface.OnClickListener answerCallClickListener() {
+        return (dialog, which) -> {
+            acceptCallInvite(null, null);
+
+            if (alertDialog != null && alertDialog.isShowing()) {
+                alertDialog.dismiss();
+                alertDialog = null;
+            }
+        };
+    }
+
+    private DialogInterface.OnClickListener cancelCallClickListener() {
+        return (dialogInterface, i) -> {
+            rejectCallInvite(null, new CallbackContext(null, TwilioVoicePlugin.this.webView) {
+                @Override
+                public void success() {
+                    JSONObject callInviteProperties = new JSONObject();
+                    try {
+                        callInviteProperties.putOpt("from", mCallInvite.getFrom());
+                        callInviteProperties.putOpt("to", mCallInvite.getTo());
+                        callInviteProperties.putOpt("callSid", mCallInvite.getCallSid());
+                    } catch (JSONException e) {
+                        Log.e(TAG, e.getMessage(), e);
+                    }
+
+                    javascriptCallback("oncallinvitecanceled", callInviteProperties, mInitCallbackContext);
+                }
+            });
+
+            if (alertDialog != null && alertDialog.isShowing()) {
+                alertDialog.dismiss();
+                alertDialog = null;
+            }
+        };
+    }
 }
