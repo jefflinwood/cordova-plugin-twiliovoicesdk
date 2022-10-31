@@ -20,6 +20,10 @@ Here is what is on the road map as of the current date for this project:
 * 6.0.1 - October 1, 2021 - Updated to support Twilio Voice SDK 5.8.0 for Android
 * 6.0.0 - April 18, 2021 - Updated to support Twilio Voice SDK 6.2.2 for iOS
 
+# Using the plugin
+
+As a very first step to using this plugin, you need to make sure that you can actually use the Twilio Voice SDK for Android or iOS with your project. You also need to have a working Cordova or Capacitor app to add this plugin.
+
 # Changed Package Name to cordova-plugin-twiliovoicesdk
 Note - as of August 21, 2018, this NPM package name will match the Cordova Plugin id.
 
