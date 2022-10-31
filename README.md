@@ -11,6 +11,8 @@ Here is what is on the road map as of the current date for this project:
 * Bump supported Twilio iOS Voice SDK to 6.4.2
 * Bump supported Twilio Android Voice SDK to 6.1.2
 * Bump supported Cordova version to 11.0
+* Refactor iOS and Android plugin code - both were based on Twilio sample code, which probably isn't the best base for this project
+* Add test coverage for JS, Obj-C, and Java - this will be an interesting project, as the code in this plugin largely acts as an integration layer
 
 # Changelog
 * 6.0.3 - October 31, 2021 - Support all parameters being passed to the Android plugin, not just "To"
