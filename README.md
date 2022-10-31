@@ -3,12 +3,14 @@
 # Cordova Plugin for Twilio Voice
 Cordova Plugin for Twilio Programmable Voice SDK
 
+## Looking for Maintainer
+This project does not get as much of my attention as it deserves, as I'm not a user of the plugin. I would be happy to put a link here to an active fork or fork(s) of this project, or to retire it if need be. 
+
 # Roadmap (October 30, 2022)
 Here is what is on the road map as of the current date for this project:
 * Bump supported Twilio iOS Voice SDK to 6.4.2
 * Bump supported Twilio Android Voice SDK to 6.1.2
 * Bump supported Cordova version to 11.0
-
 
 # Changelog
 * 6.0.3 - October 31, 2021 - Support all parameters being passed to the Android plugin, not just "To"
