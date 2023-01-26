@@ -15,6 +15,7 @@ Here is what is on the road map as of the current date for this project:
 * Add test coverage for JS, Obj-C, and Java - this will be an interesting project, as the code in this plugin largely acts as an integration layer
 
 # Changelog
+* 7.0.0 - February 20, 2022 - Send call properties with canceled call invites, show Android dialog on incoming calls
 * 6.0.3 - October 31, 2021 - Support all parameters being passed to the Android plugin, not just "To"
 * 6.0.2 - October 2, 2021 - Added error code to error message for debugging in Android
 * 6.0.1 - October 1, 2021 - Updated to support Twilio Voice SDK 5.8.0 for Android
