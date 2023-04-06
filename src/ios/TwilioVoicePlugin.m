@@ -7,7 +7,7 @@
 //
 //  Based on https://github.com/twilio/voice-callkit-quickstart-objc
 //
-
+#define allTrim( object ) [object stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet] ]
 #import "TwilioVoicePlugin.h"
 
 @import AVFoundation;
@@ -165,7 +165,14 @@ static NSString *const kTwimlParamTo = @"To";
             self.accessToken = command.arguments[0];
         }
         if ([command.arguments count] > 1) {
-            self.outgoingCallParams = command.arguments[1];
+            if ( [allTrim( command.arguments[1] ) length] == 0 ) {
+                NSDictionary *calleeDetails = @{
+                    @"to" : command.arguments[1]
+                };
+                self.outgoingCallParams = calleeDetails;
+            }else {
+                self.outgoingCallParams = [[NSMutableDictionary alloc] init];
+            }
         }
         
         if (self.call && (self.call.state == TVOCallStateConnected || self.call.state == TVOCallStateReconnecting)) {
@@ -178,7 +185,7 @@ static NSString *const kTwimlParamTo = @"To";
             } else {
                 NSLog(@"Making call to with params %@", self.outgoingCallParams);
                 if (self.outgoingCallParams == nil) {
-                    self.outgoingCallParams = [NSDictionary new];
+                    self.outgoingCallParams = [[NSMutableDictionary alloc] init];
                 }
                 TVOConnectOptions *connectOptions = [TVOConnectOptions optionsWithAccessToken:self.accessToken
                                                                                         block:^(TVOConnectOptionsBuilder *builder) {
@@ -766,11 +773,13 @@ static NSString *const kTwimlParamTo = @"To";
                       completion:(void(^)(BOOL success))completionHandler {
     
     if (self.outgoingCallParams == nil) {
-        self.outgoingCallParams = [NSDictionary new];
+        self.outgoingCallParams = [[NSMutableDictionary alloc] init];
     }
     TVOConnectOptions *connectOptions = [TVOConnectOptions optionsWithAccessToken:self.accessToken block:^(TVOConnectOptionsBuilder *builder) {
+        
         builder.params = self.outgoingCallParams;
         builder.uuid = uuid;
+        
     }];
     self.call = [TwilioVoiceSDK connectWithOptions:connectOptions delegate:self];
     self.callKitCompletionCallback = completionHandler;
